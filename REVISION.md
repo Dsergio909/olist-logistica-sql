@@ -207,6 +207,6 @@ Antigravity revisó las 3 partes otra vez, ya con las correcciones de la vuelta 
 | D | 0 | 0 | 0 |
 
 - Los más graves: la conclusión de recompra decía «no es casualidad» y no se sostenía (sesgo de tiempo de observación y compras hechas antes de recibir el pedido); el 99,7 % de reseñas usaba la fecha de envío de la encuesta en vez de la respuesta del cliente; el despacho tarde comparaba horas; «el retraso sigue al volumen» se apoyaba en un ranking circular.
-- Antigravity acertó en la mayoría, pero también se equivocó 9 veces (por ejemplo, dijo que el segmento RFM empezaba a los 4,5 meses y empieza a los 183 días, o que faltaba una columna que sí existe). Por eso cada hallazgo se comprobó contra los datos antes de aceptarlo.
+- Antigravity acertó en la mayoría, pero también propuso 8 cosas que no eran ciertas o no cambiaban nada (por ejemplo, dijo que el segmento RFM empezaba a los 4,5 meses y empieza a los 183 días, o que faltaba una columna que sí existe). Por eso cada hallazgo se comprobó contra los datos antes de aceptarlo.
 - Al final: las 32 cifras del README coinciden por dos caminos (SQL con DuckDB y Python puro sobre los CSV de Kaggle), las 88 cifras del tablero coinciden con el SQL y hay 58 pruebas en verde.
 - El tablero (`.pbix`, PDF y capturas) se rehízo con las cifras auditadas.
