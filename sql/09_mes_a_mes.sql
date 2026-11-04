@@ -17,8 +17,10 @@ with mensual as (
     group by 1
 ),
 notas as (
+    -- Solo pedidos entregados, igual que en 05 y en el tablero.
     select p.mes_compra as mes, avg(r.nota) as nota_prom
     from pedidos p join resenas r using (pedido_id)
+    where p.entregado
     group by 1
 )
 select m.mes,

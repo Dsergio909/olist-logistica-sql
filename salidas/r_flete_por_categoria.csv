@@ -1,4 +1,4 @@
-categoria,pedidos,pct_ponderado,peso_mediana_g,puesto_por_flete
+categoria,pedidos,pct_ponderado,peso_mediana_g,puesto_entre_todas
 electronics,2550,29.1,200.0,9
 furniture_decor,6449,23.7,1300.0,16
 housewares,5884,23.1,1205.0,18

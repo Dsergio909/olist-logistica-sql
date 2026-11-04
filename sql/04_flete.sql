@@ -48,7 +48,8 @@ select categoria,
        pedidos,
        round(100.0 * flete / precio, 1) as pct_ponderado,
        round(peso_mediana_g)            as peso_mediana_g,
-       rank() over (order by flete / precio desc) as puesto_por_flete
+       -- Puesto entre las 73 categorías (se calcula antes de quedarme con las 15).
+       rank() over (order by flete / precio desc) as puesto_entre_todas
 from por_categoria
 qualify row_number() over (order by pedidos desc, categoria) <= 15
 order by pct_ponderado desc, categoria;

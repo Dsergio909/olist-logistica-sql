@@ -46,7 +46,10 @@ def test_vendedores_y_concentracion(uno):
                     select pct_de_los_retrasos,
                            lag(pct_de_los_retrasos, 1, 0) over (order by pct_vendedores) as anterior
                     from r_concentracion_retrasos)""")
-    assert uno("select sum(pedidos_tarde) from r_despacho") <= uno("select sum(pedidos_tarde) from r_vendedores") + 10_000
+    # r_despacho: pedidos tarde de un solo vendedor con fecha de transportadora.
+    assert uno("select sum(pedidos_tarde) from r_despacho") == uno("""
+        select count(*) from vendedor_pedidos vp join pedido_valor v using (pedido_id)
+        where v.vendedores = 1 and vp.tarde and vp.despacho_tarde is not null""")
 
 
 def test_etapas_suman_el_total(uno):
