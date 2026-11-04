@@ -123,7 +123,7 @@ The dataset is public and downloads without an account. If Kaggle ever asks for 
 ## How I checked the numbers
 
 - **58 pytest tests**, run automatically on GitHub Actions: Kaggle totals, queries that reconcile with each other, `salidas/` matching what the SQL produces, privacy, and the README quoting exactly the numbers in `salidas/r_hallazgos.csv` (if I edit a number by hand, the test fails).
-- **A second route:** `scripts/auditoria_independiente.py` recomputes 19 numbers with plain Python from the Kaggle CSVs, without DuckDB. They match.
+- **A second route:** `scripts/auditoria_independiente.py` recomputes all 32 README numbers with plain Python from the Kaggle CSVs, without DuckDB. They match.
 - **Dashboard vs SQL:** `scripts/comparar_tablero.py` reads the Power BI PDF and compares 88 numbers with `salidas/`. They match.
 - Everything I reviewed and fixed is in [REVISION.md](REVISION.md) (in Spanish).
 

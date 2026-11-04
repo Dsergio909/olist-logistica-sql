@@ -128,7 +128,7 @@ El dataset es público y baja sin cuenta. Si Kaggle llegara a pedir credenciales
 ## Cómo comprobé las cifras
 
 - **58 pruebas con pytest**, que corren solas en GitHub Actions: totales de Kaggle, que las consultas cuadren entre sí, que `salidas/` sea lo que sale del SQL, privacidad y que el README cite exactamente las cifras de `salidas/r_hallazgos.csv` (si cambio un número a mano, la prueba falla).
-- **Por otro camino:** `scripts/auditoria_independiente.py` recalcula 19 cifras con Python puro desde los CSV de Kaggle, sin DuckDB. Dan iguales.
+- **Por otro camino:** `scripts/auditoria_independiente.py` recalcula las 32 cifras del README con Python puro desde los CSV de Kaggle, sin DuckDB. Dan iguales.
 - **El tablero contra el SQL:** `scripts/comparar_tablero.py` lee el PDF de Power BI y compara 88 cifras con `salidas/`. Dan iguales.
 - Todo lo que revisé y arreglé está en [REVISION.md](REVISION.md).
 

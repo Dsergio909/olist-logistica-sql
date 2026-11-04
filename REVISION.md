@@ -192,3 +192,21 @@ Antigravity revisó la versión corregida dos veces. Parte 3 (Power Query, DAX y
 | 4 | La descripción de `% volvió a comprar` en `dax/medidas.md` decía «desde la primera compra» | El cálculo es desde que recibió el primer pedido | **Cierto, de redacción.** Corregido |
 
 Ninguna cifra cambió. Segundo camino: 32 de 32. Pruebas: 58 de 58.
+
+### Auditoría, vuelta D: sin hallazgos
+
+Antigravity revisó las 3 partes otra vez, ya con las correcciones de la vuelta C. Las tres respondieron que no quedan errores reales de cálculo, de lógica ni de interpretación. Es la primera vuelta completa sin fallas ni mejoras: ahí termina la auditoría, como pidió Sergio.
+
+### Resumen de la auditoría pedida por Sergio
+
+| Vuelta | Hallazgos reales corregidos | Descartados con prueba | Cifras del README que cambiaron |
+|---|---|---|---|
+| A (yo + Antigravity, partes 1 y 2) | 11 | 3 | 11 |
+| B (Antigravity, las 3 partes) | 17 | 5 | 8 |
+| C | 3 menores (aclaraciones) | 1 | 0 |
+| D | 0 | 0 | 0 |
+
+- Los más graves: la conclusión de recompra decía «no es casualidad» y no se sostenía (sesgo de tiempo de observación y compras hechas antes de recibir el pedido); el 99,7 % de reseñas usaba la fecha de envío de la encuesta en vez de la respuesta del cliente; el despacho tarde comparaba horas; «el retraso sigue al volumen» se apoyaba en un ranking circular.
+- Antigravity acertó en la mayoría, pero también se equivocó 9 veces (por ejemplo, dijo que el segmento RFM empezaba a los 4,5 meses y empieza a los 183 días, o que faltaba una columna que sí existe). Por eso cada hallazgo se comprobó contra los datos antes de aceptarlo.
+- Al final: las 32 cifras del README coinciden por dos caminos (SQL con DuckDB y Python puro sobre los CSV de Kaggle), las 88 cifras del tablero coinciden con el SQL y hay 58 pruebas en verde.
+- El tablero (`.pbix`, PDF y capturas) se rehízo con las cifras auditadas.
