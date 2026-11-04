@@ -272,7 +272,7 @@ CALCULATE ( DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) ), Pedidos[
 Formato: `0.0%`
 
 ### % volvió a comprar
-Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra.
+Del resultado SQL: clientes que volvieron a comprar en los 180 días siguientes a recibir su primer pedido.
 
 ```dax
 % volvió a comprar =

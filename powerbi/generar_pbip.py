@@ -374,7 +374,7 @@ MEDIDAS = [
      "CALCULATE ( DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) ), Pedidos[entregado] = TRUE () )", "0.0%",
      "Suma de fletes sobre suma de precios."),
     ("Clientes", "% volvió a comprar", "DIVIDE ( SUM ( RecompraSQL[volvieron] ), SUM ( RecompraSQL[clientes] ) )", "0.00%",
-     "Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra."),
+     "Del resultado SQL: clientes que volvieron a comprar en los 180 días siguientes a recibir su primer pedido."),
     # Reseñas
     ("Reseñas", "Nota promedio", "CALCULATE ( AVERAGE ( Pedidos[nota] ), Pedidos[entregado] = TRUE () )", "0.00",
      "Nota de 1 a 5 de los pedidos entregados."),

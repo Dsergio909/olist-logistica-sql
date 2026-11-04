@@ -179,3 +179,16 @@ Las 3 partes encontraron, cada una por su lado, el error más importante de esta
 | 22 | Empates en NTILE y en el puesto con el % redondeado | Máximo 15 clientes; cosmético | **Descartado** (comentario aclarado) |
 
 Cifras del README que cambiaron en la vuelta B: vendedor a tiempo 72,2 % → 77,6 %; concentración (58,7/49,9) reemplazada por la tasa por tamaño (6,4 % a 7,3 %) y el 10 % peor (16,9 % de tasa, 12,7 % de los retrasos); reseñas antes de recibir 99,7 % → 96,2 %, con las notas 1,65 y 3,73; flete mayor que el producto 10,2 % → 10,1 %. Segundo camino (Python puro): 32 de 32 iguales. Pruebas: 58 de 58.
+
+### Auditoría, vuelta C
+
+Antigravity revisó la versión corregida dos veces. Parte 3 (Power Query, DAX y README): «0 errores reales». Partes 1 y 2: casi limpias.
+
+| # | Hallazgo de Antigravity | Comprobación con los datos | Veredicto |
+|---|---|---|---|
+| 1 | El segmento «ticket alto que no volvió» empieza a los ~4,5 meses, no a los 6 | Recencia mínima del segmento: 183 días; los 21.555 clientes llevan más de 180 días sin comprar | **Descartado: falso.** Aun así, el corte quedó escrito en el comentario del SQL |
+| 2 | «Vendedores con 30+ pedidos» no es el mismo grupo en `r_vendedores` y `r_peores_vendedores` | 627 contando todos los pedidos y 615 contando solo los de un vendedor | **Cierto, bajo.** Explicado en el comentario (las dos decisiones tienen razón de ser) |
+| 3 | El chequeo de calidad 5 no filtraba entregados, a diferencia de los otros | 166 contra 165 | **Cierto, trivial.** Filtrado |
+| 4 | La descripción de `% volvió a comprar` en `dax/medidas.md` decía «desde la primera compra» | El cálculo es desde que recibió el primer pedido | **Cierto, de redacción.** Corregido |
+
+Ninguna cifra cambió. Segundo camino: 32 de 32. Pruebas: 58 de 58.

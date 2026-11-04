@@ -35,7 +35,7 @@ chequeos as (
     from pedidos
     union all
     select 5, 'Entregado a la transportadora antes de la compra',
-           count(*) filter (where fecha_entrega_transportadora < fecha_compra),
+           count(*) filter (where entregado and fecha_entrega_transportadora < fecha_compra),
            'Se dejan: error de registro de la fuente'
     from pedidos
     union all

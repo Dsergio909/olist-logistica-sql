@@ -115,6 +115,9 @@ order by 1;
 
 -- Los peores por tasa: el 10 % de los vendedores con 30 o más pedidos que más
 -- llega tarde. ¿Qué parte de todos los retrasos se llevan?
+-- Aquí cuentan solo pedidos de un vendedor (615 vendedores con 30+), para no
+-- culpar a uno por el retraso de otro. r_vendedores, que es la ficha de cada
+-- vendedor, cuenta todos sus pedidos (627 vendedores con 30+).
 create or replace table r_peores_vendedores as
 with por_vendedor as (
     select vp.vendedor_id, count(*) as pedidos, count(*) filter (where vp.tarde) as tarde
