@@ -39,7 +39,7 @@ with por_categoria as (
            count(distinct i.order_id)                    as pedidos,
            sum(i.price)                                  as precio,
            sum(i.freight_value)                          as flete,
-           median(pr.peso_g)                             as peso_mediana_g
+           median(pr.peso_g)                             as peso_mediana_g   -- por ítem vendido
     from items_crudos i
     join productos pr on pr.producto_id = i.product_id
     group by 1

@@ -6,5 +6,5 @@ orden,chequeo,cantidad,que_hago
 5,Entregado a la transportadora antes de la compra,166,Se dejan: error de registro de la fuente
 6,Pedidos sin ningún producto,775,Casi todos cancelados o no disponibles
 7,Pedidos con más de una reseña,547,Me quedo con la más reciente
-8,Pedidos con pago distinto a precio + flete (más de R$1),249,Intereses de cuotas y vales: no afecta la logística
+8,Pedidos con pago distinto a precio + flete (más de R$1),250,Intereses de cuotas y vales (y 1 pedido sin pago): no afecta la logística
 9,Productos sin categoría,610,Quedan como sin_categoria

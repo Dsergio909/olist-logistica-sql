@@ -8,7 +8,8 @@
 -- =============================================================================
 
 create or replace table entregas_con_nota as
-select p.pedido_id, p.dias_retraso, r.nota
+select p.pedido_id, p.dias_retraso, r.nota,
+       r.fecha_resena < p.fecha_entrega_cliente::date as resena_antes
 from pedidos p
 join resenas r using (pedido_id)
 where p.entregado;
@@ -38,8 +39,12 @@ create or replace table r_pendiente_nota as
 select tramo,
        count(*)                                  as pedidos,
        round(avg(nota), 2)                       as nota_prom,
-       round(regr_slope(nota, dias_retraso), 3)  as puntos_por_dia,
-       round(corr(nota, dias_retraso), 3)        as correlacion
+       -- Con tope de -20 y +20 días: hay pedidos de -147 y +188 días que, solos,
+       -- aplanaban la pendiente de los tramos abiertos.
+       round(regr_slope(nota, greatest(-20, least(20, dias_retraso))), 3) as puntos_por_dia,
+       round(corr(nota, greatest(-20, least(20, dias_retraso))), 3)       as correlacion,
+       -- Antes de recibir: la reseña se escribió antes de que llegara el paquete.
+       round(100.0 * count(*) filter (where resena_antes) / count(*), 1)  as pct_resena_antes_de_recibir
 from (
     select *,
            case when dias_retraso <= 0 then '1. A tiempo'

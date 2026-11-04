@@ -43,8 +43,9 @@ select v.vendedor_id,
        round(v.dias_entrega_prom, 1)                               as dias_entrega_prom,
        round(v.nota_prom, 2)                                       as nota_prom,
        rank() over (order by v.pedidos_tarde * 1.0 / v.pedidos_entregados desc) as puesto_por_retraso,
-       -- 1 = el 25 % que más cumple, 4 = el 25 % que menos cumple.
-       ntile(4) over (order by v.pedidos_tarde * 1.0 / v.pedidos_entregados, v.vendedor_id) as cuartil_retraso
+       -- 1 = el 25 % que más cumple, 4 = el 25 % que menos cumple. Con PERCENT_RANK
+       -- los vendedores empatados quedan en el mismo cuartil (NTILE los partía).
+       least(4, 1 + floor(4 * percent_rank() over (order by v.pedidos_tarde * 1.0 / v.pedidos_entregados)))::int as cuartil_retraso
 from por_vendedor v
 join vendedores s using (vendedor_id)
 where v.pedidos_entregados >= 30
@@ -52,10 +53,16 @@ order by puesto_por_retraso, vendedor_id;
 
 -- Concentración: ordeno a todos los vendedores por cantidad de retrasos y voy
 -- sumando. ¿Cuántos retrasos y cuántos pedidos se llevan los primeros?
+-- Solo pedidos de un vendedor: Olist da una sola fecha de entrega por pedido, así
+-- que en un pedido de dos vendedores no se sabe cuál causó el retraso (y el pedido
+-- se contaría dos veces). Son el 98,7 % de los pedidos entregados.
 create or replace table r_concentracion_retrasos as
 with por_vendedor as (
-    select vendedor_id, count(*) as pedidos, count(*) filter (where tarde) as tarde
-    from vendedor_pedidos group by 1
+    select vp.vendedor_id, count(*) as pedidos, count(*) filter (where vp.tarde) as tarde
+    from vendedor_pedidos vp
+    join pedido_valor v using (pedido_id)
+    where v.vendedores = 1
+    group by 1
 ),
 acumulado as (
     select *,

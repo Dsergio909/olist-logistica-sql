@@ -5,7 +5,11 @@
 --
 -- Definiciones que usa todo el proyecto:
 --   entregado     = estado 'delivered' y con fecha de entrega al cliente.
---   dias_entrega  = días (con decimales) entre la compra y la entrega.
+--   dias_entrega    = días de calendario entre el día de compra y el de entrega.
+--   dias_prometidos = días de calendario entre el día de compra y el prometido.
+--                   Los dos en días de calendario porque Olist guarda la fecha
+--                   prometida a las 00:00: contando horas, la promesa salía ~0,6
+--                   días más corta (corregido en la revisión del 4-nov).
 --   dias_retraso  = días de calendario entre la fecha prometida y la real.
 --                   Positivo = llegó tarde; 0 o negativo = a tiempo.
 --   tarde         = dias_retraso > 0.
@@ -55,8 +59,8 @@ select o.order_id                      as pedido_id,
        o.order_estimated_delivery_date as fecha_prometida,
        date_trunc('month', o.order_purchase_timestamp)::date as mes_compra,
        (o.order_status = 'delivered' and o.order_delivered_customer_date is not null) as entregado,
-       date_diff('second', o.order_purchase_timestamp, o.order_delivered_customer_date) / 86400.0 as dias_entrega,
-       date_diff('second', o.order_purchase_timestamp, o.order_estimated_delivery_date) / 86400.0 as dias_prometidos,
+       date_diff('day', o.order_purchase_timestamp::date, o.order_delivered_customer_date::date)  as dias_entrega,
+       date_diff('day', o.order_purchase_timestamp::date, o.order_estimated_delivery_date::date)  as dias_prometidos,
        date_diff('day', o.order_estimated_delivery_date::date, o.order_delivered_customer_date::date) as dias_retraso
 from pedidos_crudos o
 join clientes c on c.cliente_pedido_id = o.customer_id;

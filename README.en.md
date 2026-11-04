@@ -4,26 +4,26 @@
 
 I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to answer three logistics questions: where deliveries get delayed, how much shipping weighs on the price, and which sellers deliver on time. I used SQL (DuckDB) and a 4-page Power BI dashboard.
 
-> **In 30 seconds:** 6.8% of deliveries arrive late, but in 72.2% of those cases the seller shipped on time: the problem is transport. And being late is expensive: the review score drops from 4.29 to 1.73 within a week of delay, and fewer customers come back.
+> **In 30 seconds:** 6.8% of deliveries arrive late, but in 72.2% of those cases the seller shipped on time: the problem is transport. And being late is expensive: the review score drops from 4.29 to 1.73 within a week of delay. And almost nobody buys again: 2.2%.
 
 ![Logistics page of the dashboard](capturas/01_logistica.png)
 
 ## What I found
 
 **1. The store promises with a big buffer, and it still misses.**
-On average it promises 23.7 days and delivers in 12.6. Even so, 6,534 of the 96,470 delivered orders arrived late: 6.8%. Rio de Janeiro gets 12.8% of the deliveries but 22.9% of the delays.
+On average it promises 24.4 days and delivers in 12.5. Even so, 6,534 of the 96,470 delivered orders arrived late: 6.8%. Rio de Janeiro gets 12.8% of the deliveries but 22.9% of the delays.
 
 **2. When an order is late, it is rarely the seller's fault.**
-In 72.2% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it is not a handful of bad sellers: the 5% of sellers with the most delays have 58.9% of the delays, but also 50.1% of the orders. Delays follow volume.
+In 72.2% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it is not a handful of bad sellers: the 5% of sellers with the most delays have 58.7% of the delays, but also 49.9% of the orders. Delays follow volume.
 
 **3. The review score drops in the first week, and after that it no longer matters how late.**
-On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. What hurts is missing the date, not by how much.
+On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. And I found out why: 99.7% of those reviews were written before the package arrived. The customer rates the wait, not the product, so what hurts is missing the date, not by how much.
 
 **4. On cheap orders, shipping is almost half the price.**
 Across Olist, shipping is 16.6% of the product price. But on orders under R$50, which are 29.8% of all orders, shipping is 48.4%. In 10.2% of those orders shipping costs more than what was bought.
 
-**5. Almost nobody comes back, and even fewer if the first order was late.**
-Only 3.0% of customers bought more than once. If their first order arrived on time, 3.77% came back. If it was late, 2.83%. The difference is not chance: the z-test gives 2.91 (1.96 is the bar for 95%). And 22.2% of customers made a single high-value purchase (top 40% by spend) and never returned; that group left 40.1% of the money.
+**5. Almost nobody comes back, and I could not prove the delay is the cause.**
+Only 2.2% of customers bought on more than one day. At first I found that customers whose first order arrived late come back much less, but then I noticed they bought closer to the end of the data and had less time to return. Giving everyone the same 180-day window, 2.02% came back if it arrived on time and 1.61% if it was late. The z-test gives 1.71, below 1.96: the difference may be chance. What does matter is something else: 22.7% of customers made a single high-value purchase (top 40% by spend) and never returned, and that group left 41.1% of the money.
 
 **What I would test with this:** review the São Paulo → Rio de Janeiro route with the carrier before looking at sellers, warn the customer as soon as an order is going to be late (the score drops from day one), and look for ways to group shipments under R$50.
 
@@ -31,11 +31,11 @@ Only 3.0% of customers bought more than once. If their first order arrived on ti
 
 > I wanted to practice SQL with real logistics data, so I took the almost 100 thousand public orders from Olist, an online marketplace in Brazil, and asked three questions: where deliveries get delayed, how much shipping weighs, and which sellers deliver on time.
 >
-> The first thing I saw is that the store promises almost double the time it actually takes: it promises 24 days and delivers in 13. Still, one in fifteen orders arrives late, and Rio de Janeiro takes almost a quarter of those delays.
+> The first thing I saw is that the store promises almost double the time it actually takes: it promises 24 days and delivers in twelve and a half. Still, one in fifteen orders arrives late, and Rio de Janeiro takes almost a quarter of those delays.
 >
 > What surprised me most is that the problem is not the sellers. In seven out of ten late orders, the seller shipped on time and the time was lost with the carrier. And the sellers with the most delays are mostly the ones that sell the most.
 >
-> Then I crossed deliveries with reviews. One day late already lowers the score, and after a week it hits the floor: from 4.3 it goes to 1.7 and stays there. Customers whose first order arrived late also come back less; I checked it with a statistical test so I would not mistake it for chance.
+> Then I crossed deliveries with reviews. One day late already lowers the score, and after a week it hits the floor: from 4.3 it goes to 1.7 and stays there. I also thought customers whose first order arrived late come back less, but once I gave everyone the same time to return, the difference was no longer strong enough to claim. I would rather say that than tell something the data does not support.
 >
 > Everything is in numbered SQL queries, with automated tests that check every number in the README comes from the data. The Power BI dashboard has four pages: logistics, sellers, customers and reviews.
 
@@ -131,7 +131,7 @@ The dataset is public and downloads without an account. If Kaggle ever asks for 
 
 - The data ends in August 2018. September and October 2018 have almost no orders, so the time series go from January 2017 to August 2018.
 - I do not know which carrier handled each order: Olist does not publish it. That is why I talk about "the transport stage" and not a company.
-- The repeat-purchase result is a relationship; it does not prove the delay is the cause. There may be other reasons that are not in the data.
+- Repeat purchases are so rare that this data cannot tell whether delays affect them. More years of orders, or data on why customers do not return, would measure it better.
 
 ## How I built it
 

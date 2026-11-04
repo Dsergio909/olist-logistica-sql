@@ -2,10 +2,12 @@
 -- 07_rfm.sql · RFM: qué clientes compran seguido y cuánto
 --   R (recencia)  = días desde la última compra hasta el día después del último
 --                   pedido de los datos.
---   F (frecuencia)= número de pedidos.
+--   F (frecuencia)= número de días distintos con compra (dos pedidos en el mismo
+--                   momento son una sola compra partida).
 --   M (monto)     = total pagado.
--- Como el 97 % compra una sola vez, F no se puede partir en quintiles: uso
--- 1 pedido, 2 pedidos y 3 o más. R y M sí van en quintiles (NTILE(5)).
+-- Como casi todos compran un solo día, F no se puede partir en quintiles: uso
+-- 1 día de compra, 2 días y 3 o más. R y M sí van en quintiles (NTILE(5)); los
+-- empates se reparten por cliente_id para que el resultado sea siempre el mismo.
 -- Resultados: rfm_clientes (una fila por cliente, la usa Power BI) y
 --             r_rfm_segmentos (resumen por segmento).
 -- =============================================================================
@@ -17,7 +19,7 @@ with pagos_pedido as (
 por_cliente as (
     select c.cliente_id,
            max(c.fecha_compra)                       as ultima_compra,
-           count(distinct c.pedido_id)               as frecuencia,
+           count(distinct c.fecha_compra::date)      as frecuencia,
            coalesce(sum(g.pagado), 0)                as monto
     from compras_validas c
     left join pagos_pedido g using (pedido_id)
@@ -50,7 +52,7 @@ select segmento,
        round(sum(monto), 0)                                  as monto_total,
        round(100.0 * sum(monto) / sum(sum(monto)) over (), 1) as pct_monto,
        round(avg(monto), 2)                                  as monto_prom,
-       round(avg(frecuencia), 2)                             as pedidos_prom,
+       round(avg(frecuencia), 2)                             as compras_prom,
        round(avg(recencia_dias))                             as recencia_prom_dias
 from rfm_clientes
 group by 1

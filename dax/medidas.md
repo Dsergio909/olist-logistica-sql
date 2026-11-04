@@ -55,7 +55,7 @@ CALCULATE ( [% tarde], Pedidos[mes_completo] = TRUE () )
 Formato: `0.0%`
 
 ### Días de entrega
-Días promedio de la compra a la entrega.
+Días de calendario promedio, del día de compra al de entrega.
 
 ```dax
 Días de entrega =
@@ -64,7 +64,7 @@ CALCULATE ( AVERAGE ( Pedidos[dias_entrega] ), Pedidos[entregado] = TRUE () )
 Formato: `0.0`
 
 ### Días prometidos
-Días promedio que la tienda prometió al comprar.
+Días de calendario promedio, del día de compra al día prometido.
 
 ```dax
 Días prometidos =
@@ -233,7 +233,7 @@ DIVIDE ( [Monto], CALCULATE ( [Monto], ALL ( RFM ) ) )
 Formato: `0.0%`
 
 ### % que vuelve a comprar
-Clientes con más de un pedido.
+Clientes que compraron en más de un día.
 
 ```dax
 % que vuelve a comprar =
@@ -241,10 +241,11 @@ DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )
 ```
 Formato: `0.0%`
 
-### Gasto por pedido (R$)
+### Gasto por compra (R$)
+Total pagado sobre días de compra (dos pedidos el mismo día son una compra).
 
 ```dax
-Gasto por pedido (R$) =
+Gasto por compra (R$) =
 DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )
 ```
 Formato: `#,0.00`
@@ -259,7 +260,7 @@ DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )
 Formato: `0.0%`
 
 ### % volvió a comprar
-Del resultado SQL: clientes que volvieron después de su primera compra.
+Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra.
 
 ```dax
 % volvió a comprar =

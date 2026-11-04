@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Gasto por pedido (R$)"
+                  "Property": "Gasto por compra (R$)"
                 }
               },
-              "queryRef": "Medidas.Gasto por pedido (R$)",
-              "nativeQueryRef": "Gasto por pedido (R$)"
+              "queryRef": "Medidas.Gasto por compra (R$)",
+              "nativeQueryRef": "Gasto por compra (R$)"
             }
           ]
         }

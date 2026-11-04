@@ -32,13 +32,13 @@ table Medidas
 		displayFolder: Logística
 		lineageTag: a70b8d44-15f4-5092-83c2-ab3f1f58c93e
 
-	/// Días promedio de la compra a la entrega.
+	/// Días de calendario promedio, del día de compra al de entrega.
 	measure 'Días de entrega' = CALCULATE ( AVERAGE ( Pedidos[dias_entrega] ), Pedidos[entregado] = TRUE () )
 		formatString: 0.0
 		displayFolder: Logística
 		lineageTag: 9898fd8f-3575-5514-b249-20c8517f36cc
 
-	/// Días promedio que la tienda prometió al comprar.
+	/// Días de calendario promedio, del día de compra al día prometido.
 	measure 'Días prometidos' = CALCULATE ( AVERAGE ( Pedidos[dias_prometidos] ), Pedidos[entregado] = TRUE () )
 		formatString: 0.0
 		displayFolder: Logística
@@ -151,16 +151,17 @@ table Medidas
 		displayFolder: Clientes
 		lineageTag: 2a954f1a-e5ad-5562-abce-91c98ba2b170
 
-	/// Clientes con más de un pedido.
+	/// Clientes que compraron en más de un día.
 	measure '% que vuelve a comprar' = DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )
 		formatString: 0.0%
 		displayFolder: Clientes
 		lineageTag: 41912253-1e1f-567d-b34f-142d24bf5a66
 
-	measure 'Gasto por pedido (R$)' = DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )
+	/// Total pagado sobre días de compra (dos pedidos el mismo día son una compra).
+	measure 'Gasto por compra (R$)' = DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )
 		formatString: #,0.00
 		displayFolder: Clientes
-		lineageTag: d60c9153-ce4b-53c0-ae94-c1283af596aa
+		lineageTag: 2f3d4c3d-5449-563f-b681-a836ab5e21f7
 
 	/// Suma de fletes sobre suma de precios.
 	measure 'Flete % del precio' = DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )
@@ -168,7 +169,7 @@ table Medidas
 		displayFolder: Clientes
 		lineageTag: 3963a7fc-de91-537d-850c-fa02aa3d4194
 
-	/// Del resultado SQL: clientes que volvieron después de su primera compra.
+	/// Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra.
 	measure '% volvió a comprar' = DIVIDE ( SUM ( RecompraSQL[volvieron] ), SUM ( RecompraSQL[clientes] ) )
 		formatString: 0.00%
 		displayFolder: Clientes

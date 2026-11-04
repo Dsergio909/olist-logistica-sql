@@ -184,7 +184,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'¿Vuelve a comprar? Según cómo llegó su primer pedido'"
+                  "Value": "'¿Vuelve en 180 días? Según cómo llegó su primer pedido'"
                 }
               }
             },

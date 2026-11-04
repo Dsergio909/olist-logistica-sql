@@ -27,8 +27,10 @@ select m.mes,
        m.pedidos,
        m.pedidos - lag(m.pedidos) over (order by m.mes)               as cambio_pedidos,
        round(100.0 * m.tarde / m.entregados, 1)                       as pct_tarde,
-       round(avg(100.0 * m.tarde / m.entregados)
-             over (order by m.mes rows between 2 preceding and current row), 1) as pct_tarde_movil_3m,
+       -- Ponderado: tarde de los 3 meses / entregados de los 3 meses (no el promedio
+       -- de tres porcentajes, que le daría el mismo peso a un mes chico que a uno grande).
+       round(100.0 * sum(m.tarde) over (order by m.mes rows between 2 preceding and current row)
+             / sum(m.entregados) over (order by m.mes rows between 2 preceding and current row), 1) as pct_tarde_movil_3m,
        round(m.dias_entrega_prom, 1)                                  as dias_entrega_prom,
        round(n.nota_prom, 2)                                          as nota_prom
 from mensual m

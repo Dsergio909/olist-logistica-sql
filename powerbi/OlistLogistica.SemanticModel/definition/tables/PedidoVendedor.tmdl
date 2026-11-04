@@ -105,8 +105,8 @@ table PedidoVendedor
 		annotation SummarizationSetBy = Automatic
 
 	column dias_entrega
-		dataType: double
-		formatString: 0.0
+		dataType: int64
+		formatString: 0
 		lineageTag: 750586c5-3e9d-56f5-a0f3-6b3c3200670c
 		summarizeBy: none
 		sourceColumn: dias_entrega
@@ -148,7 +148,7 @@ table PedidoVendedor
 				        {"estado_pedido", "fecha_compra", "fecha_transportadora", "fecha_entrega", "fecha_prometida", "estado_cliente"}),
 				    Entregado = Table.AddColumn(Pedido, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
 				    Tarde = Table.AddColumn(Entregado, "tarde", each [entregado] and Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) > 0, type logical),
-				    DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
+				    DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
 				    Despacho = Table.AddColumn(DiasEntrega, "despacho", each if [fecha_transportadora] = null then "Sin dato" else if [fecha_transportadora] > [fecha_limite] then "Tarde" else "A tiempo", type text),
 				    // Cuántos vendedores tiene el pedido (para medir el despacho solo en pedidos de uno)
 				    Cuenta = Table.Group(Despacho, {"pedido_id"}, {{"vendedores_del_pedido", each Table.RowCount(_), Int64.Type}}),

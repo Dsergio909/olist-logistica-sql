@@ -76,9 +76,15 @@ def test_rfm(uno):
     assert uno("select count(*) from rfm_clientes where r not between 1 and 5 or m not between 1 and 5") == 0
 
 
-def test_recompra_diferencia_significativa(hallazgos):
-    assert hallazgos["recompra_primera_a_tiempo"][0] > hallazgos["recompra_primera_tarde"][0]
-    assert hallazgos["z_recompra"][0] > 1.96
+def test_recompra_misma_ventana_para_todos(con, uno):
+    """Cada cliente se mide 180 días: nadie de la prueba compró por primera vez después de feb-2018,
+    y la última compra de los datos queda después de esos 180 días."""
+    assert uno("select max(fecha_compra) from primera_compra where entregado and fecha_compra < '2018-03-01'")         + __import__("datetime").timedelta(days=180) <= uno("select max(fecha_compra) from compras_validas")
+    # La z se recalcula aquí con las cuentas del CSV (proporción combinada).
+    (n1, x1), (n2, x2) = con.execute("select clientes, volvieron from r_recompra_primera_entrega order by grupo").fetchall()
+    p = (x1 + x2) / (n1 + n2)
+    z = (x1 / n1 - x2 / n2) / (p * (1 - p) * (1 / n1 + 1 / n2)) ** 0.5
+    assert round(z, 2) == uno("select max(z_diferencia) from r_recompra_primera_entrega")
 
 
 def test_mes_a_mes(uno):

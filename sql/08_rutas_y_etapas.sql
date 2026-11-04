@@ -2,7 +2,8 @@
 -- 08_rutas_y_etapas.sql · ¿Dónde se pierde el tiempo?
 -- Resultados:
 --   r_etapas         días de cada etapa (aprobar, despachar, transportar) en
---                    pedidos a tiempo contra pedidos tarde.
+--                    pedidos a tiempo contra pedidos tarde. Aquí se cuentan horas
+--                    (días con decimales), para que las tres etapas sumen el total.
 --   r_despacho       si el vendedor despacha tarde, ¿cuánto sube el retraso?
 --   r_rutas          estado del vendedor -> estado del cliente (200+ pedidos).
 --   r_mismo_estado   mismo estado contra otro estado.
@@ -14,7 +15,7 @@ select case when dias_retraso > 0 then 'Llegó tarde' else 'A tiempo' end as res
        round(avg(date_diff('second', fecha_compra, fecha_aprobacion) / 86400.0), 1)                       as dias_aprobar_pago,
        round(avg(date_diff('second', fecha_aprobacion, fecha_entrega_transportadora) / 86400.0), 1)       as dias_vendedor_despacha,
        round(avg(date_diff('second', fecha_entrega_transportadora, fecha_entrega_cliente) / 86400.0), 1)  as dias_transportadora,
-       round(avg(dias_entrega), 1)                                                                         as dias_total
+       round(avg(date_diff('second', fecha_compra, fecha_entrega_cliente) / 86400.0), 1)                 as dias_total
 from pedidos
 where entregado
   and fecha_aprobacion is not null and fecha_entrega_transportadora is not null

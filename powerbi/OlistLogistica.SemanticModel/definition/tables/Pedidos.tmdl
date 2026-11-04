@@ -80,8 +80,8 @@ table Pedidos
 		annotation SummarizationSetBy = Automatic
 
 	column dias_entrega
-		dataType: double
-		formatString: 0.0
+		dataType: int64
+		formatString: 0
 		lineageTag: 5f63ddf4-16c3-5d58-af58-4d4d1d44eea2
 		summarizeBy: none
 		sourceColumn: dias_entrega
@@ -89,8 +89,8 @@ table Pedidos
 		annotation SummarizationSetBy = Automatic
 
 	column dias_prometidos
-		dataType: double
-		formatString: 0.0
+		dataType: int64
+		formatString: 0
 		lineageTag: f41197f8-a80c-5147-ac5d-e4df69693e7a
 		summarizeBy: none
 		sourceColumn: dias_prometidos
@@ -227,9 +227,10 @@ table Pedidos
 				        {"fecha_prometida", type datetime}}),
 				    // Entregado = estado delivered y con fecha de entrega (8 pedidos no la tienen)
 				    Entregado = Table.AddColumn(Tipos, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
-				    DiasEntrega = Table.AddColumn(Entregado, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
-				    DiasPrometidos = Table.AddColumn(DiasEntrega, "dias_prometidos", each if [entregado] then Duration.TotalDays([fecha_prometida] - [fecha_compra]) else null, type number),
-				    // Días de calendario entre lo prometido y lo real: positivo = tarde
+				    DiasEntrega = Table.AddColumn(Entregado, "dias_entrega", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
+				    DiasPrometidos = Table.AddColumn(DiasEntrega, "dias_prometidos", each if [entregado] then Duration.Days(DateTime.Date([fecha_prometida]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
+				    // Todo en días de calendario: Olist guarda la fecha prometida a las 00:00
+				    // Días entre lo prometido y lo real: positivo = tarde
 				    DiasRetraso = Table.AddColumn(DiasPrometidos, "dias_retraso", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) else null, Int64.Type),
 				    Tarde = Table.AddColumn(DiasRetraso, "tarde", each [dias_retraso] <> null and [dias_retraso] > 0, type logical),
 				    Resultado = Table.AddColumn(Tarde, "resultado", each if not [entregado] then null else if [tarde] then "Llegó tarde" else "A tiempo", type text),

@@ -26,7 +26,7 @@ rj as (
 ),
 recompra as (
     select round(100.0 * count(*) filter (where n > 1) / count(*), 1) as pct
-    from (select cliente_id, count(*) as n from compras_validas group by 1)
+    from (select cliente_id, count(distinct fecha_compra::date) as n from compras_validas group by 1)
 ),
 filas(orden, clave, valor, decimales, descripcion) as (
     select 1,  'pedidos_total',          pedidos::double, 0, 'Pedidos en los datos' from base union all
@@ -56,6 +56,9 @@ filas(orden, clave, valor, decimales, descripcion) as (
            from r_pendiente_nota where tramo = '2. De 1 a 6 días tarde' union all
     select 16, 'nota_7_dias_o_mas', nota_prom, 2, 'Nota promedio con 7 o más días de retraso'
            from r_pendiente_nota where tramo = '3. 7 o más días tarde' union all
+    select 28, 'pct_resena_antes_7_mas', pct_resena_antes_de_recibir, 1,
+               '% de reseñas con 7 o más días de retraso escritas antes de recibir el paquete'
+           from r_pendiente_nota where tramo = '3. 7 o más días tarde' union all
     select 17, 'flete_pct_total', (select round(100.0 * sum(flete) / sum(precio), 1) from pedido_valor), 1,
                'Flete como % del precio, todos los pedidos' union all
     select 18, 'pct_pedidos_menos_50', pct_pedidos, 1, '% de pedidos de menos de R$50'
@@ -64,12 +67,12 @@ filas(orden, clave, valor, decimales, descripcion) as (
            from r_flete_por_rango_precio where orden_rango = 1 union all
     select 20, 'pct_flete_mayor_menos_50', pct_flete_mayor_que_precio, 1, '% de esos pedidos donde el flete cuesta más que el producto'
            from r_flete_por_rango_precio where orden_rango = 1 union all
-    select 21, 'pct_clientes_recompran', pct, 1, '% de clientes con más de un pedido' from recompra union all
-    select 22, 'recompra_primera_a_tiempo', pct_volvio, 2, '% que volvió si la primera entrega llegó a tiempo'
+    select 21, 'pct_clientes_recompran', pct, 1, '% de clientes que compraron en más de un día' from recompra union all
+    select 22, 'recompra_primera_a_tiempo', pct_volvio, 2, '% que volvió en 180 días si la primera entrega llegó a tiempo'
            from r_recompra_primera_entrega where grupo = 'Primera entrega a tiempo' union all
-    select 23, 'recompra_primera_tarde', pct_volvio, 2, '% que volvió si la primera entrega llegó tarde'
+    select 23, 'recompra_primera_tarde', pct_volvio, 2, '% que volvió en 180 días si la primera entrega llegó tarde'
            from r_recompra_primera_entrega where grupo = 'Primera entrega tarde' union all
-    select 24, 'z_recompra', z_diferencia, 2, 'Prueba z de la diferencia (más de 1,96 = no es casualidad al 95 %)'
+    select 24, 'z_recompra', z_diferencia, 2, 'Prueba z de la diferencia (desde 1,96 se descarta la casualidad al 95 %)'
            from r_recompra_primera_entrega where grupo = 'Primera entrega tarde' union all
     select 25, 'rfm_ticket_alto_pct_clientes', pct_clientes, 1, '% de clientes: una compra de ticket alto y no volvieron'
            from r_rfm_segmentos where segmento = '5. Ticket alto que no volvió' union all

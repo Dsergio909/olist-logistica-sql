@@ -7,6 +7,8 @@
 --   r_recompra_primera_entrega  ¿vuelven menos los que recibieron tarde su
 --                               primer pedido? Con prueba z de dos proporciones.
 -- Uso pedidos de todos los estados menos cancelados y no disponibles.
+-- Volver a comprar = una compra en OTRO DÍA. 281 clientes tienen dos pedidos en el
+-- mismo segundo: es una sola compra partida en dos, no una recompra.
 -- =============================================================================
 
 create or replace table compras_validas as
@@ -39,15 +41,21 @@ where a.cohorte between date '2017-01-01' and date '2018-08-01'   -- meses con d
 group by a.cohorte, t.clientes, a.mes_desde_primera
 order by a.cohorte, a.mes_desde_primera;
 
--- ¿Influye la primera entrega? Solo primeras compras hasta febrero de 2018,
--- para que todos tengan al menos 6 meses para volver (los datos llegan a ago-2018).
+-- ¿Influye la primera entrega? Todos se miden con la MISMA ventana: 180 días
+-- después de la primera compra. Solo primeras compras hasta febrero de 2018, para
+-- que la ventana completa quepa en los datos (llegan a ago-2018).
+-- Por qué la ventana fija (corregido en la revisión del 4-nov): los retrasos se
+-- concentraron en nov-2017 y feb-mar-2018, así que esos clientes tenían menos meses
+-- de datos para volver (297 días contra 347 en promedio). Sin la ventana fija, la
+-- diferencia salía más grande de lo que es.
 create or replace table r_recompra_primera_entrega as
 with base as (
     select f.cliente_id,
            f.dias_retraso > 0 as primera_tarde,
            exists (select 1 from compras_validas c
-                   where c.cliente_id = f.cliente_id and c.pedido_id <> f.pedido_id
-                     and c.fecha_compra > f.fecha_compra) as volvio
+                   where c.cliente_id = f.cliente_id
+                     and c.fecha_compra::date > f.fecha_compra::date            -- otro día
+                     and c.fecha_compra <= f.fecha_compra + interval 180 day) as volvio
     from primera_compra f
     where f.entregado and f.fecha_compra < timestamp '2018-03-01'
 ),

@@ -69,9 +69,10 @@ let
         {{"fecha_prometida", type datetime}}}}),
     // Entregado = estado delivered y con fecha de entrega (8 pedidos no la tienen)
     Entregado = Table.AddColumn(Tipos, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
-    DiasEntrega = Table.AddColumn(Entregado, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
-    DiasPrometidos = Table.AddColumn(DiasEntrega, "dias_prometidos", each if [entregado] then Duration.TotalDays([fecha_prometida] - [fecha_compra]) else null, type number),
-    // Días de calendario entre lo prometido y lo real: positivo = tarde
+    DiasEntrega = Table.AddColumn(Entregado, "dias_entrega", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
+    DiasPrometidos = Table.AddColumn(DiasEntrega, "dias_prometidos", each if [entregado] then Duration.Days(DateTime.Date([fecha_prometida]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
+    // Todo en días de calendario: Olist guarda la fecha prometida a las 00:00
+    // Días entre lo prometido y lo real: positivo = tarde
     DiasRetraso = Table.AddColumn(DiasPrometidos, "dias_retraso", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) else null, Int64.Type),
     Tarde = Table.AddColumn(DiasRetraso, "tarde", each [dias_retraso] <> null and [dias_retraso] > 0, type logical),
     Resultado = Table.AddColumn(Tarde, "resultado", each if not [entregado] then null else if [tarde] then "Llegó tarde" else "A tiempo", type text),
@@ -131,7 +132,7 @@ let
         {{"estado_pedido", "fecha_compra", "fecha_transportadora", "fecha_entrega", "fecha_prometida", "estado_cliente"}}),
     Entregado = Table.AddColumn(Pedido, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
     Tarde = Table.AddColumn(Entregado, "tarde", each [entregado] and Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) > 0, type logical),
-    DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
+    DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
     Despacho = Table.AddColumn(DiasEntrega, "despacho", each if [fecha_transportadora] = null then "Sin dato" else if [fecha_transportadora] > [fecha_limite] then "Tarde" else "A tiempo", type text),
     // Cuántos vendedores tiene el pedido (para medir el despacho solo en pedidos de uno)
     Cuenta = Table.Group(Despacho, {{"pedido_id"}}, {{{{"vendedores_del_pedido", each Table.RowCount(_), Int64.Type}}}}),
@@ -243,7 +244,7 @@ COLUMNAS = {
         ("estado_cliente", "string", None, False), ("estado_pedido", "string", None, False),
         ("fecha_compra", "dateTime", "dd/mm/yyyy hh:nn", False), ("fecha_compra_dia", "dateTime", "dd/mm/yyyy", True),
         ("entregado", "boolean", None, False), ("tarde", "boolean", None, False), ("resultado", "string", None, False),
-        ("dias_entrega", "double", "0.0", False), ("dias_prometidos", "double", "0.0", False),
+        ("dias_entrega", "int64", "0", False), ("dias_prometidos", "int64", "0", False),
         ("dias_retraso", "int64", "0", False), ("tramo_retraso", "int64", "0", False),
         ("dias_aprobacion", "double", "0.0", False), ("dias_vendedor", "double", "0.0", False),
         ("dias_transportadora", "double", "0.0", False), ("nota", "int64", "0", False),
@@ -257,7 +258,7 @@ COLUMNAS = {
         ("precio", "double", "#,0.00", False), ("flete", "double", "#,0.00", False),
         ("entregado", "boolean", None, False), ("tarde", "boolean", None, False), ("despacho", "string", None, False),
         ("vendedores_del_pedido", "int64", "0", False), ("nota", "int64", "0", False),
-        ("dias_entrega", "double", "0.0", False), ("fecha_compra_dia", "dateTime", "dd/mm/yyyy", True),
+        ("dias_entrega", "int64", "0", False), ("fecha_compra_dia", "dateTime", "dd/mm/yyyy", True),
     ],
     "Vendedores": [
         ("vendedor_id", "string", None, False), ("vendedor_corto", "string", None, False),
@@ -317,9 +318,9 @@ MEDIDAS = [
     ("Logística", "% tarde (meses completos)", "CALCULATE ( [% tarde], Pedidos[mes_completo] = TRUE () )", "0.0%",
      "Igual, pero solo de ene-2017 a ago-2018 (los meses con datos completos), para la línea de tiempo."),
     ("Logística", "Días de entrega", "CALCULATE ( AVERAGE ( Pedidos[dias_entrega] ), Pedidos[entregado] = TRUE () )", "0.0",
-     "Días promedio de la compra a la entrega."),
+     "Días de calendario promedio, del día de compra al de entrega."),
     ("Logística", "Días prometidos", "CALCULATE ( AVERAGE ( Pedidos[dias_prometidos] ), Pedidos[entregado] = TRUE () )", "0.0",
-     "Días promedio que la tienda prometió al comprar."),
+     "Días de calendario promedio, del día de compra al día prometido."),
     ("Logística", "Colchón (días)", "[Días prometidos] - [Días de entrega]", "0.0",
      "Cuántos días antes de lo prometido llega, en promedio."),
     ("Logística", "Aprobar el pago (días)", "AVERAGE ( Pedidos[dias_aprobacion] )", "0.0",
@@ -358,12 +359,13 @@ MEDIDAS = [
     ("Clientes", "Monto", "SUM ( RFM[monto] )", "#,0", "Total pagado, en reales."),
     ("Clientes", "% del dinero", "DIVIDE ( [Monto], CALCULATE ( [Monto], ALL ( RFM ) ) )", "0.0%", ""),
     ("Clientes", "% que vuelve a comprar", "DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )", "0.0%",
-     "Clientes con más de un pedido."),
-    ("Clientes", "Gasto por pedido (R$)", "DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )", "#,0.00", ""),
+     "Clientes que compraron en más de un día."),
+    ("Clientes", "Gasto por compra (R$)", "DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )", "#,0.00",
+     "Total pagado sobre días de compra (dos pedidos el mismo día son una compra)."),
     ("Clientes", "Flete % del precio", "DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )", "0.0%",
      "Suma de fletes sobre suma de precios."),
     ("Clientes", "% volvió a comprar", "DIVIDE ( SUM ( RecompraSQL[volvieron] ), SUM ( RecompraSQL[clientes] ) )", "0.00%",
-     "Del resultado SQL: clientes que volvieron después de su primera compra."),
+     "Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra."),
     # Reseñas
     ("Reseñas", "Nota promedio", "CALCULATE ( AVERAGE ( Pedidos[nota] ), Pedidos[entregado] = TRUE () )", "0.00",
      "Nota de 1 a 5 de los pedidos entregados."),
@@ -639,7 +641,7 @@ def paginas() -> list[Pagina]:
 
     p3 = Pagina("clientes", "¿Los clientes vuelven? ¿Cuánto pesa el flete?",
                 "Segmentos RFM (recencia, frecuencia y monto) calculados en SQL. Flete como % del precio de los productos del pedido.")
-    p3.tarjetas(["Clientes", "% que vuelve a comprar", "Gasto por pedido (R$)", "Flete % del precio"])
+    p3.tarjetas(["Clientes", "% que vuelve a comprar", "Gasto por compra (R$)", "Flete % del precio"])
     p3.grafico("clusteredBarChart", 24, 192, 600, 300, "Segmentos RFM: % de clientes y % del dinero",
                {"Category": [C("RFM", "segmento")], "Y": [Me("% clientes"), Me("% del dinero")]},
                orden=(C("RFM", "segmento"), "Ascending"),
@@ -647,7 +649,7 @@ def paginas() -> list[Pagina]:
                    {"properties": {"fill": color(GRIS)}, "selector": {"metadata": "Medidas.% clientes"}},
                    {"properties": {"fill": color(ACENTO)}, "selector": {"metadata": "Medidas.% del dinero"}}],
                    "legend": [{"properties": {"show": lit(True), "position": lit("Top")}}]})
-    p3.grafico("clusteredColumnChart", 24, 508, 600, 178, "¿Vuelve a comprar? Según cómo llegó su primer pedido",
+    p3.grafico("clusteredColumnChart", 24, 508, 600, 178, "¿Vuelve en 180 días? Según cómo llegó su primer pedido",
                {"Category": [C("RecompraSQL", "grupo")], "Y": [Me("% volvió a comprar")]}, objetos=EJE_VALOR_OCULTO)
     p3.grafico("clusteredColumnChart", 640, 192, 616, 494, "Flete como % del precio, según el valor del pedido",
                {"Category": [C("Pedidos", "rango_precio")], "Y": [Me("Flete % del precio")]},

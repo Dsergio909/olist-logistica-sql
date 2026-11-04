@@ -43,9 +43,9 @@ chequeos as (
            'Me quedo con la más reciente'
     union all
     select 8, 'Pedidos con pago distinto a precio + flete (más de R$1)',
-           count(*) filter (where abs(g.pagado - (v.precio + v.flete)) > 1),
-           'Intereses de cuotas y vales: no afecta la logística'
-    from pedido_valor v join pagos_por_pedido g using (pedido_id)
+           count(*) filter (where abs(coalesce(g.pagado, 0) - (v.precio + v.flete)) > 1),
+           'Intereses de cuotas y vales (y 1 pedido sin pago): no afecta la logística'
+    from pedido_valor v left join pagos_por_pedido g using (pedido_id)
     union all
     select 9, 'Productos sin categoría',
            count(*) filter (where categoria = 'sin_categoria'), 'Quedan como sin_categoria'
