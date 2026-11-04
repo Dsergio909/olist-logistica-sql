@@ -9,6 +9,8 @@ Proyecto 2 del plan de portafolio de datos de Sergio: logística de la tienda Ol
 ## Reglas de este repo
 - Las cifras del README salen de `salidas/r_hallazgos.csv`. Si cambias el SQL, corre `python scripts/correr_sql.py` y actualiza los dos README: `pytest` falla si una cifra no coincide.
 - `datos/` tiene los Parquet de Olist (licencia CC BY-NC-SA 4.0, con atribución). `datos_crudos/` (los CSV de Kaggle) no se sube.
+- Para rehacer los datos: `python scripts/descargar_datos.py` (kagglehub, sin cuenta) y luego `python scripts/preparar_datos.py`.
+- Para comprobar: `python scripts/auditoria_independiente.py` (Python puro contra el SQL) y `python scripts/comparar_tablero.py` (PDF del tablero contra el SQL).
 - El tablero se genera con `python powerbi/generar_pbip.py` (modelo, Power Query, gráficos y `dax/medidas.md`). No edites a mano los archivos de `powerbi/OlistLogistica.*`: cambia el generador.
 - Una sola tarea pesada a la vez en el PC: antes de abrir Power BI, revisa que no esté abierto por otro chat.
 - Nada de rutas del PC con usuario, correos, claves ni teléfonos (`pruebas/test_privacidad.py` lo revisa).
