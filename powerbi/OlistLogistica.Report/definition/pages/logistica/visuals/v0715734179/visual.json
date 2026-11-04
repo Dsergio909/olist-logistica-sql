@@ -6,7 +6,7 @@
     "y": 192,
     "z": 7000,
     "width": 392,
-    "height": 494,
+    "height": 604,
     "tabOrder": 7000
   },
   "visual": {
@@ -94,7 +94,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "7D"
                 }
               }
             },
@@ -126,6 +126,27 @@
                       "Value": "'#57606a'"
                     }
                   }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "7D"
+                }
+              }
+            },
+            "innerPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "20D"
+                }
+              }
+            },
+            "minCategoryWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
                 }
               }
             }

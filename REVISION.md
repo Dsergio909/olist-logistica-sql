@@ -53,3 +53,15 @@ Lo que encontré y arreglé (en el generador, no a mano):
 
 Quedan para la vuelta de mejora: el mapa corta algunas burbujas en los bordes, la barra de estados no muestra los 27 en el PDF y los números dentro de las barras oscuras casi no se leen.
 
+
+## Vuelta 1 de mejora (4-nov): el tablero
+
+| Antes | Después |
+|---|---|
+| El mapa cortaba burbujas en los bordes (RS, RN, PB) | Ejes con márgenes fijos (longitud -75 a -32, latitud -35 a 6): ninguna burbuja cortada |
+| La barra de estados tenía barra de desplazamiento y el PDF mostraba 22 de 27 estados | La página de Logística pasó de 720 a 830 px de alto: se ven los 27 |
+| Los números dentro de las barras oscuras de las etapas casi no se leían | Etiquetas en blanco |
+| La comparación del PDF contra el SQL revisaba 15 estados | Revisa los 27: 88 de 88 cifras iguales |
+| El generador borraba la caché de Power BI cada vez | Solo rehace `definition/`; Power BI aplica los cambios sin volver a cargar los datos |
+
+El `.pbix` final pesa 19,9 MB (límite del plan: 50 MB), así que va en el repo.

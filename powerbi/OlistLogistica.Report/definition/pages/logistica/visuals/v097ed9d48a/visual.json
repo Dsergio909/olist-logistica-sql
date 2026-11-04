@@ -3,10 +3,10 @@
   "name": "v097ed9d48a",
   "position": {
     "x": 840,
-    "y": 447,
+    "y": 502,
     "z": 9000,
     "width": 416,
-    "height": 239,
+    "height": 294,
     "tabOrder": 9000
   },
   "visual": {
@@ -98,7 +98,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#57606a'"
+                      "Value": "'#FFFFFF'"
                     }
                   }
                 }
@@ -107,7 +107,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "9D"
                 }
               }
             },

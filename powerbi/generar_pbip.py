@@ -395,30 +395,30 @@ def sangrar(texto: str, tabs: int) -> str:
 
 
 def escribir_modelo() -> None:
-    if MODELO.exists():
-        shutil.rmtree(MODELO)
+    if (MODELO / "definition").exists():
+        shutil.rmtree(MODELO / "definition")   # .pbi/ (caché de Power BI) se conserva
     (MODELO / "definition" / "tables").mkdir(parents=True)
     (MODELO / "definition.pbism").write_text(json.dumps(
         {"$schema": "https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/definitionProperties/1.0.0/schema.json",
-         "version": "4.2", "settings": {}}, indent=2) + "\n", encoding="utf-8")
+         "version": "4.2", "settings": {}}, indent=2) + "\n", encoding="utf-8", newline="\n")
     d = MODELO / "definition"
-    (d / "database.tmdl").write_text("database\n\tcompatibilityLevel: 1600\n", encoding="utf-8")
+    (d / "database.tmdl").write_text("database\n\tcompatibilityLevel: 1600\n", encoding="utf-8", newline="\n")
     tablas = list(COLUMNAS)
     modelo = ["model Model", "\tculture: es-CO", "\tdefaultPowerBIDataSourceVersion: powerBI_V3",
               "\tsourceQueryCulture: es-CO", "\tdataAccessOptions", "\t\tlegacyRedirects", "\t\treturnErrorValuesAsNull", "",
               "annotation PBI_QueryOrder = " + json.dumps(["CarpetaRepo"] + tablas), "",
               "annotation __PBI_TimeIntelligenceEnabled = 0", ""]
     modelo += [f"ref table {nombre_tmdl(t)}" for t in tablas]
-    (d / "model.tmdl").write_text("\n".join(modelo) + "\n", encoding="utf-8")
+    (d / "model.tmdl").write_text("\n".join(modelo) + "\n", encoding="utf-8", newline="\n")
     (d / "expressions.tmdl").write_text(
         f'expression CarpetaRepo = "{CARPETA_REPO}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]\n'
-        f"\tlineageTag: {guid('param')}\n\n\tannotation PBI_ResultType = Text\n", encoding="utf-8")
+        f"\tlineageTag: {guid('param')}\n\n\tannotation PBI_ResultType = Text\n", encoding="utf-8", newline="\n")
     rel = []
     for desde_t, desde_c, hacia_t, hacia_c in RELACIONES:
         rel += [f"relationship {guid(desde_t + desde_c + hacia_t)}",
                 f"\tfromColumn: {nombre_tmdl(desde_t)}.{nombre_tmdl(desde_c)}",
                 f"\ttoColumn: {nombre_tmdl(hacia_t)}.{nombre_tmdl(hacia_c)}", ""]
-    (d / "relationships.tmdl").write_text("\n".join(rel), encoding="utf-8")
+    (d / "relationships.tmdl").write_text("\n".join(rel), encoding="utf-8", newline="\n")
 
     for tabla, columnas in COLUMNAS.items():
         out = [f"/// {DESCRIPCION_TABLA[tabla]}", f"table {nombre_tmdl(tabla)}", f"\tlineageTag: {guid(tabla)}", ""]
@@ -448,7 +448,7 @@ def escribir_modelo() -> None:
                 out.append(f"\t\tsortByColumn: {orden}")
             out += ["", "\t\tannotation SummarizationSetBy = Automatic", ""]
         out += [f"\tpartition {nombre_tmdl(tabla)} = m", "\t\tmode: import", "\t\tsource =", sangrar(M[tabla], 4), ""]
-        (d / "tables" / f"{tabla}.tmdl").write_text("\n".join(out) + "\n", encoding="utf-8")
+        (d / "tables" / f"{tabla}.tmdl").write_text("\n".join(out) + "\n", encoding="utf-8", newline="\n")
 
 
 # --------------------------------------------------------------------------
@@ -502,8 +502,8 @@ def unir(base: dict, extra: dict) -> dict:
 
 
 class Pagina:
-    def __init__(self, nombre: str, titulo: str, subtitulo: str):
-        self.nombre, self.titulo, self.subtitulo = nombre, titulo, subtitulo
+    def __init__(self, nombre: str, titulo: str, subtitulo: str, alto: int = 720):
+        self.nombre, self.titulo, self.subtitulo, self.alto = nombre, titulo, subtitulo, alto
         self.visuales: list[dict] = []
         self.texto(titulo, subtitulo, 24, 12, 1232, 64)
         self.texto_pie()
@@ -526,7 +526,7 @@ class Pagina:
             "drillFilterOtherVisuals": True}})
 
     def texto_pie(self):
-        n, pos = self._base(24, 694, 1232, 22)
+        n, pos = self._base(24, self.alto - 26, 1232, 22)
         self.visuales.append({"name": n, "position": pos, "visual": {
             "visualType": "textbox",
             "objects": {"general": [{"properties": {"paragraphs": [{"textRuns": [{
@@ -589,23 +589,28 @@ EJE_VALOR_OCULTO = {"valueAxis": [{"properties": {"show": lit(False), "gridlineS
 
 def paginas() -> list[Pagina]:
     p1 = Pagina("logistica", "¿Dónde se demoran las entregas?",
-                "Entrega real contra la fecha que promete la tienda. Pedidos entregados de Olist (Brasil), 2016 a 2018.")
+                "Entrega real contra la fecha que promete la tienda. Pedidos entregados de Olist (Brasil), 2016 a 2018.", alto=830)
     p1.tarjetas(["Pedidos entregados", "% tarde", "Días de entrega", "Días prometidos"])
-    p1.grafico("scatterChart", 24, 192, 392, 494, "Mapa: % de entregas tarde (burbuja = % tarde)",
+    p1.grafico("scatterChart", 24, 192, 392, 604, "Mapa: % de entregas tarde (burbuja = % tarde)",
                {"Category": [C("Estados", "codigo")], "X": [Me("Longitud")], "Y": [Me("Latitud")], "Size": [Me("% tarde")]},
-               objetos={**SIN_EJES, "categoryLabels": [{"properties": {"show": lit(True), "color": color(TEXTO), "fontSize": lit(8)}}],
+               objetos={"categoryAxis": [{"properties": {"show": lit(False), "start": lit(-75), "end": lit(-32)}}],
+                        "valueAxis": [{"properties": {"show": lit(False), "gridlineShow": lit(False), "start": lit(-35), "end": lit(6)}}],
+                        "categoryLabels": [{"properties": {"show": lit(True), "color": color(TEXTO), "fontSize": lit(8)}}],
                         "dataPoint": [{"properties": {"fill": color(ACENTO)}}],
-                        "bubbles": [{"properties": {"bubbleSize": lit(-20)}}]})
-    p1.grafico("clusteredBarChart", 432, 192, 392, 494, "% de entregas tarde por estado del cliente",
+                        "bubbles": [{"properties": {"bubbleSize": lit(-22)}}]})
+    p1.grafico("clusteredBarChart", 432, 192, 392, 604, "% de entregas tarde por estado del cliente",
                {"Category": [C("Estados", "codigo")], "Y": [Me("% tarde")]},
-               orden=(Me("% tarde"), "Descending"), objetos=EJE_VALOR_OCULTO)
-    p1.grafico("lineChart", 840, 192, 416, 239, "% de entregas tarde por mes de compra",
+               orden=(Me("% tarde"), "Descending"),
+               objetos={**EJE_VALOR_OCULTO,
+                        "categoryAxis": [{"properties": {"fontSize": lit(7), "innerPadding": lit(20), "minCategoryWidth": lit(10)}}],
+                        "labels": [{"properties": {"fontSize": lit(7)}}]})
+    p1.grafico("lineChart", 840, 192, 416, 294, "% de entregas tarde por mes de compra",
                {"Category": [C("Calendario", "inicio_mes")], "Y": [Me("% tarde (meses completos)")]},
                orden=(C("Calendario", "inicio_mes"), "Ascending"),
                objetos={"dataPoint": [{"properties": {"fill": color(ACENTO)}}],
                         "labels": [{"properties": {"show": lit(False)}}],
                         "categoryAxis": [{"properties": {"axisType": lit("Scalar")}}]})
-    p1.grafico("barChart", 840, 447, 416, 239, "¿En qué etapa se va el tiempo? (días promedio)",
+    p1.grafico("barChart", 840, 502, 416, 294, "¿En qué etapa se va el tiempo? (días promedio)",
                {"Category": [C("Pedidos", "resultado")],
                 "Y": [(Me("Aprobar el pago (días)"), "Aprobar pago"), (Me("Vendedor despacha (días)"), "Vendedor despacha"),
                       (Me("Transportadora (días)"), "Transportadora")]},
@@ -613,7 +618,8 @@ def paginas() -> list[Pagina]:
                    {"properties": {"fill": color("#c9d1d9")}, "selector": {"metadata": "Medidas.Aprobar el pago (días)"}},
                    {"properties": {"fill": color(GRIS)}, "selector": {"metadata": "Medidas.Vendedor despacha (días)"}},
                    {"properties": {"fill": color(ACENTO)}, "selector": {"metadata": "Medidas.Transportadora (días)"}}],
-                   "legend": [{"properties": {"show": lit(True), "position": lit("Top")}}]})
+                   "legend": [{"properties": {"show": lit(True), "position": lit("Top")}}],
+                   "labels": [{"properties": {"color": color("#FFFFFF"), "fontSize": lit(9)}}]})
 
     p2 = Pagina("vendedores", "¿Qué vendedores cumplen?",
                 "Cada fila es lo que despachó un vendedor en un pedido. Despacho tarde = entregó a la transportadora después de su fecha límite.")
@@ -689,8 +695,9 @@ TEMA = {
 
 
 def escribir_informe() -> None:
-    if INFORME.exists():
-        shutil.rmtree(INFORME)
+    for sub in ("definition", "StaticResources"):
+        if (INFORME / sub).exists():
+            shutil.rmtree(INFORME / sub)
     d = INFORME / "definition"
     (d / "pages").mkdir(parents=True)
     base = INFORME / "StaticResources" / "SharedResources" / "BaseThemes"
@@ -699,14 +706,14 @@ def escribir_informe() -> None:
     propio.mkdir(parents=True)
     tema_base = PBI / "tema_base_CY24SU10.json"
     shutil.copy(tema_base, base / "CY24SU10.json")
-    (propio / "TemaOlist.json").write_text(json.dumps(TEMA, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (propio / "TemaOlist.json").write_text(json.dumps(TEMA, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
     (INFORME / "definition.pbir").write_text(json.dumps({
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json",
         "version": "4.0", "datasetReference": {"byPath": {"path": f"../{NOMBRE}.SemanticModel"}}}, indent=2) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
     (d / "version.json").write_text(json.dumps({
-        "$schema": f"{ESQUEMA}/versionMetadata/1.0.0/schema.json", "version": "2.0.0"}, indent=2) + "\n", encoding="utf-8")
+        "$schema": f"{ESQUEMA}/versionMetadata/1.0.0/schema.json", "version": "2.0.0"}, indent=2) + "\n", encoding="utf-8", newline="\n")
     version_tema = {"visual": "1.8.0", "report": "2.0.0", "page": "1.3.0"}
     (d / "report.json").write_text(json.dumps({
         "$schema": f"{ESQUEMA}/report/3.0.0/schema.json",
@@ -720,30 +727,30 @@ def escribir_informe() -> None:
              "items": [{"name": "TemaOlist.json", "path": "TemaOlist.json", "type": "CustomTheme"}]}],
         "settings": {"useStylableVisualContainerHeader": True, "defaultDrillFilterOtherVisuals": True,
                      "allowChangeFilterTypes": True, "useEnhancedTooltips": True}}, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
 
     lista = paginas()
     (d / "pages" / "pages.json").write_text(json.dumps({
         "$schema": f"{ESQUEMA}/pagesMetadata/1.0.0/schema.json",
-        "pageOrder": [p.nombre for p in lista], "activePageName": lista[0].nombre}, indent=2) + "\n", encoding="utf-8")
+        "pageOrder": [p.nombre for p in lista], "activePageName": lista[0].nombre}, indent=2) + "\n", encoding="utf-8", newline="\n")
     nombres_pagina = {"logistica": "Logística", "vendedores": "Vendedores", "clientes": "Clientes", "resenas": "Reseñas"}
     for p in lista:
         carpeta = d / "pages" / p.nombre
         (carpeta / "visuals").mkdir(parents=True)
         (carpeta / "page.json").write_text(json.dumps({
             "$schema": f"{ESQUEMA}/page/2.0.0/schema.json", "name": p.nombre,
-            "displayName": nombres_pagina[p.nombre], "displayOption": "FitToPage", "height": 720, "width": 1280},
-            indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            "displayName": nombres_pagina[p.nombre], "displayOption": "FitToPage", "height": p.alto, "width": 1280},
+            indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
         for v in p.visuales:
             (carpeta / "visuals" / v["name"]).mkdir()
             contenido = {"$schema": f"{ESQUEMA}/visualContainer/2.4.0/schema.json", **v}
             (carpeta / "visuals" / v["name"] / "visual.json").write_text(
-                json.dumps(contenido, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                json.dumps(contenido, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
     (PBI / f"{NOMBRE}.pbip").write_text(json.dumps({
         "$schema": "https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json",
         "version": "1.0", "artifacts": [{"report": {"path": f"{NOMBRE}.Report"}}],
-        "settings": {"enableAutoRecovery": True}}, indent=2) + "\n", encoding="utf-8")
+        "settings": {"enableAutoRecovery": True}}, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 # --------------------------------------------------------------------------
@@ -767,7 +774,7 @@ def escribir_medidas_md() -> None:
         if explicacion:
             lineas.append(explicacion)
         lineas += ["", "```dax", f"{nombre} =", formula, "```", f"Formato: `{formato}`", ""]
-    (RAIZ / "dax" / "medidas.md").write_text("\n".join(lineas), encoding="utf-8")
+    (RAIZ / "dax" / "medidas.md").write_text("\n".join(lineas), encoding="utf-8", newline="\n")
 
 
 def main() -> None:

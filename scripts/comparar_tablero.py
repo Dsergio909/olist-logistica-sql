@@ -51,8 +51,8 @@ def main() -> int:
             "Recompra, primera tarde": es(h["recompra_primera_tarde"], 2, True)},
         4: {"Nota si llega a tiempo": es(h["nota_a_tiempo"], 2), "Nota 7 o más días tarde": es(h["nota_7_dias_o_mas"], 2)},
     }
-    # Los 15 estados con más retraso se ven siempre en la barra (los demás quedan abajo del scroll).
-    for r in estados[:15]:
+    # Los 27 estados se ven en la barra de la página 1.
+    for r in estados:
         esperado[1][f"% tarde {r['estado']}"] = es(float(r["pct_tarde"]), 1, True)
     for r in flete:
         esperado[3][f"Flete {r['rango_precio']}"] = es(float(r["pct_ponderado"]), 1, True)
