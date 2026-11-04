@@ -12,7 +12,11 @@ with base as (
            count(*) filter (where entregado)                   as entregados,
            count(*) filter (where entregado and dias_retraso > 0) as tarde,
            avg(dias_entrega) filter (where entregado)          as dias_entrega,
-           avg(dias_prometidos) filter (where entregado)       as dias_prometidos
+           avg(dias_prometidos) filter (where entregado)       as dias_prometidos,
+           -- La fecha prometida siempre viene a las 00:00. Si se comparan horas, todo
+           -- lo que llega el mismo día prometido cuenta como tarde (así lo hacen muchos
+           -- análisis de Olist). Yo comparo días; esta cifra es para explicar la diferencia.
+           count(*) filter (where entregado and fecha_entrega_cliente > fecha_prometida) as tarde_por_hora
     from pedidos
 ),
 rj as (
@@ -29,6 +33,8 @@ filas(orden, clave, valor, decimales, descripcion) as (
     select 2,  'pedidos_entregados',     entregados, 0, 'Pedidos entregados con fecha' from base union all
     select 3,  'pedidos_tarde',          tarde, 0, 'Entregados después de la fecha prometida' from base union all
     select 4,  'pct_tarde',              round(100.0 * tarde / entregados, 1), 1, '% de entregas tarde' from base union all
+    select 27, 'pct_tarde_contando_mismo_dia', round(100.0 * tarde_por_hora / entregados, 1), 1,
+               '% tarde si también cuenta lo que llega el mismo día prometido' from base union all
     select 5,  'dias_entrega_prom',      round(dias_entrega, 1), 1, 'Días promedio de la compra a la entrega' from base union all
     select 6,  'dias_prometidos_prom',   round(dias_prometidos, 1), 1, 'Días promedio que promete Olist' from base union all
     select 7,  'pct_retrasos_vendedor_a_tiempo', pct_de_los_retrasos, 1,

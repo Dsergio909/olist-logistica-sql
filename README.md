@@ -12,7 +12,7 @@ Analicé 99.441 pedidos reales de Olist, una tienda en línea de Brasil, para re
 En promedio promete 23,7 días y entrega en 12,6. Igual, 6.534 de los 96.470 pedidos entregados llegaron tarde: el 6,8 %. Rio de Janeiro recibe el 12,8 % de las entregas, pero se lleva el 22,9 % de los retrasos.
 
 **2. Cuando llega tarde, casi nunca es culpa del vendedor.**
-En el 72,2 % de los pedidos que llegaron tarde, el vendedor sí entregó a tiempo a la transportadora. El tiempo se pierde en el transporte: 27,9 días en los pedidos tarde contra 8,0 en los que llegan bien. Y no son unos pocos vendedores malos: el 5 % de vendedores con más retrasos tiene el 58,9 % de los retrasos, pero también el 50,1 % de los pedidos. El retraso sigue al volumen.
+En el 72,2 % de los pedidos que llegaron tarde, el vendedor sí entregó a tiempo a la transportadora (cuento los pedidos de un solo vendedor, que son casi todos). El tiempo se pierde en el transporte: 27,9 días en los pedidos tarde contra 8,0 en los que llegan bien. Y no son unos pocos vendedores malos: el 5 % de vendedores con más retrasos tiene el 58,9 % de los retrasos, pero también el 50,1 % de los pedidos. El retraso sigue al volumen.
 
 **3. La nota se cae en la primera semana y después ya no importa cuánto.**
 Si llega a tiempo, la nota promedio es 4,29 de 5. Entre 1 y 6 días tarde, cada día cuesta 0,38 puntos. Desde el día 7 ya no baja más: se queda en 1,73. Me di cuenta de que lo que pesa es pasarse de la fecha, no cuánto se pasa.
@@ -21,7 +21,7 @@ Si llega a tiempo, la nota promedio es 4,29 de 5. Entre 1 y 6 días tarde, cada 
 En todo Olist el flete es el 16,6 % del precio de los productos. Pero en los pedidos de menos de R$50, que son el 29,8 % del total, el flete es el 48,4 %. En el 10,2 % de esos pedidos el envío cuesta más que lo que se compró.
 
 **5. Casi nadie vuelve, y menos si el primer pedido llegó tarde.**
-Solo el 3,0 % de los clientes compró más de una vez. Si su primer pedido llegó a tiempo, volvió el 3,77 %. Si llegó tarde, el 2,83 %. La diferencia no es casualidad: la prueba z da 2,91 (desde 1,96 ya se considera real al 95 %). Y el 22,2 % de los clientes hizo una sola compra de valor alto y no volvió; ese grupo dejó el 40,1 % del dinero.
+Solo el 3,0 % de los clientes compró más de una vez. Si su primer pedido llegó a tiempo, volvió el 3,77 %. Si llegó tarde, el 2,83 %. La diferencia no es casualidad: la prueba z da 2,91 (desde 1,96 ya se considera real al 95 %). Y el 22,2 % de los clientes hizo una sola compra de valor alto (del 40 % que más gasta) y no volvió; ese grupo dejó el 40,1 % del dinero.
 
 **Lo que yo probaría con esto:** revisar con la transportadora la ruta São Paulo → Rio de Janeiro antes que a los vendedores, avisarle al cliente apenas un pedido va a llegar tarde (la nota cae desde el primer día) y buscar cómo agrupar los envíos de menos de R$50.
 
@@ -58,7 +58,7 @@ Las medidas DAX están en [dax/medidas.md](dax/medidas.md), para leerlas sin abr
 - **Fuente:** [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), publicado por Olist en Kaggle. Son datos reales de 2016 a 2018, ya anonimizados por Olist: 9 archivos CSV con pedidos, clientes, vendedores, productos, pagos, reseñas y códigos postales.
 - **Licencia:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Se puede compartir y adaptar sin fines comerciales, dando crédito a Olist y con la misma licencia. Por eso la copia de `datos/` y los resultados de `salidas/` también van bajo CC BY-NC-SA 4.0, con atribución a Olist.
 - **Lo que cambié:** pasé los CSV a Parquet (de 126 MB a 22 MB, mismas filas). Quité el texto de los comentarios de las reseñas, porque el análisis no lo usa y es texto escrito por personas. Y resumí la geolocalización a un punto por código postal. `scripts/preparar_datos.py` hace todo esto desde los CSV de Kaggle.
-- **Cómo cuento "tarde":** el pedido llegó después del día prometido, comparando días de calendario. Si llegó el mismo día prometido, cuenta como a tiempo.
+- **Cómo cuento "tarde":** el pedido llegó después del día prometido, comparando días de calendario. Si llegó el mismo día prometido, cuenta como a tiempo. Ojo: Olist guarda la fecha prometida a las 00:00, así que si se comparan horas, todo lo que llega ese mismo día sale como tarde y el porcentaje sube a 8,1 %. Por eso otros análisis de Olist dan esa cifra.
 
 ## Qué hay en el repo
 

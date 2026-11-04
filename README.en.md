@@ -12,7 +12,7 @@ I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to ans
 On average it promises 23.7 days and delivers in 12.6. Even so, 6,534 of the 96,470 delivered orders arrived late: 6.8%. Rio de Janeiro gets 12.8% of the deliveries but 22.9% of the delays.
 
 **2. When an order is late, it is rarely the seller's fault.**
-In 72.2% of the late orders, the seller handed the package to the carrier on time. The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it is not a handful of bad sellers: the 5% of sellers with the most delays have 58.9% of the delays, but also 50.1% of the orders. Delays follow volume.
+In 72.2% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it is not a handful of bad sellers: the 5% of sellers with the most delays have 58.9% of the delays, but also 50.1% of the orders. Delays follow volume.
 
 **3. The review score drops in the first week, and after that it no longer matters how late.**
 On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. What hurts is missing the date, not by how much.
@@ -21,7 +21,7 @@ On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day
 Across Olist, shipping is 16.6% of the product price. But on orders under R$50, which are 29.8% of all orders, shipping is 48.4%. In 10.2% of those orders shipping costs more than what was bought.
 
 **5. Almost nobody comes back, and even fewer if the first order was late.**
-Only 3.0% of customers bought more than once. If their first order arrived on time, 3.77% came back. If it was late, 2.83%. The difference is not chance: the z-test gives 2.91 (1.96 is the bar for 95%). And 22.2% of customers made a single high-value purchase and never returned; that group left 40.1% of the money.
+Only 3.0% of customers bought more than once. If their first order arrived on time, 3.77% came back. If it was late, 2.83%. The difference is not chance: the z-test gives 2.91 (1.96 is the bar for 95%). And 22.2% of customers made a single high-value purchase (top 40% by spend) and never returned; that group left 40.1% of the money.
 
 **What I would test with this:** review the São Paulo → Rio de Janeiro route with the carrier before looking at sellers, warn the customer as soon as an order is going to be late (the score drops from day one), and look for ways to group shipments under R$50.
 
@@ -53,7 +53,7 @@ The dashboard labels are in Spanish. Screenshots: [sellers](capturas/02_vendedor
 - **Source:** [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), published by Olist on Kaggle. Real data from 2016 to 2018, already anonymized by Olist: 9 CSV files with orders, customers, sellers, products, payments, reviews and zip codes.
 - **License:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). It can be shared and adapted for non-commercial use, crediting Olist and under the same license. That is why the copy in `datos/` and the results in `salidas/` are also CC BY-NC-SA 4.0, attributed to Olist.
 - **What I changed:** I converted the CSVs to Parquet (126 MB down to 22 MB, same rows). I removed the review comment text, because the analysis does not use it and it is text written by people. And I reduced geolocation to one point per zip code. `scripts/preparar_datos.py` does all of this from the Kaggle CSVs.
-- **How I count "late":** the order arrived after the promised day, comparing calendar days. Arriving on the promised day counts as on time.
+- **How I count "late":** the order arrived after the promised day, comparing calendar days. Arriving on the promised day counts as on time. Note: Olist stores the promised date at 00:00, so if you compare timestamps, everything delivered on that same day shows up as late and the rate goes up to 8.1%. That is why other Olist analyses report that number.
 
 ## What is in the repo
 

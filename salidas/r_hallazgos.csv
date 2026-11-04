@@ -25,3 +25,4 @@ orden,clave,valor,decimales,descripcion
 24,z_recompra,2.91,2,"Prueba z de la diferencia (más de 1,96 = no es casualidad al 95 %)"
 25,rfm_ticket_alto_pct_clientes,22.2,1,% de clientes: una compra de ticket alto y no volvieron
 26,rfm_ticket_alto_pct_monto,40.1,1,% del dinero que dejaron esos clientes
+27,pct_tarde_contando_mismo_dia,8.1,1,% tarde si también cuenta lo que llega el mismo día prometido

@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+import re
+
 import correr_sql
 import pytest
 
@@ -28,12 +30,35 @@ def formato(valor: float, decimales: int, idioma: str) -> str:
     return texto
 
 
+def aparece(numero: str, texto: str) -> bool:
+    """El número aparece entero: '8,0' no cuenta si solo está dentro de '48,0'."""
+    return re.search(rf"(?<![\d.,]){re.escape(numero)}(?![\d]|[.,]\d)", texto) is not None
+
+
 @pytest.mark.parametrize("archivo,idioma", [("README.md", "es"), ("README.en.md", "en")])
 def test_readme_cita_las_cifras_de_los_datos(hallazgos, archivo, idioma):
     texto = (RAIZ / archivo).read_text(encoding="utf-8")
     faltan = [f"{clave} = {formato(v, d, idioma)}" for clave, (v, d) in hallazgos.items()
-              if formato(v, d, idioma) not in texto]
+              if not aparece(formato(v, d, idioma), texto)]
     assert not faltan, f"{archivo} no cita estas cifras de r_hallazgos: {faltan}"
+
+
+SECCION = {"es": ("## Qué encontré", "## Cómo explicarlo"), "en": ("## What I found", "## How to explain")}
+# Números de la sección que no son resultados: el umbral de la prueba z.
+NO_SON_RESULTADOS = {"1,96", "1.96"}
+
+
+@pytest.mark.parametrize("archivo,idioma", [("README.md", "es"), ("README.en.md", "en")])
+def test_cada_cifra_de_los_hallazgos_sale_de_los_datos(hallazgos, archivo, idioma):
+    texto = (RAIZ / archivo).read_text(encoding="utf-8")
+    inicio, fin = SECCION[idioma]
+    seccion = texto[texto.index(inicio):texto.index(fin)]
+    sep_dec = "," if idioma == "es" else "."
+    sep_mil = "." if idioma == "es" else ","
+    patron = rf"(?<![\d.,])\d{{1,3}}(?:\{sep_mil}\d{{3}})+(?![\d])|(?<![\d.,])\d+\{sep_dec}\d+(?![\d])"
+    validos = {formato(v, d, idioma) for v, d in hallazgos.values()} | NO_SON_RESULTADOS
+    sueltos = sorted(set(re.findall(patron, seccion)) - validos)
+    assert not sueltos, f"{archivo}: estas cifras no salen de r_hallazgos: {sueltos}"
 
 
 def test_formato():
