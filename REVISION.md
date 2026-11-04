@@ -95,3 +95,54 @@ Sabotaje para comprobarlo: cambié el nombre de una medida en un gráfico y la p
 ## IA local y Antigravity
 
 Por la regla nueva de Sergio (4-nov) intenté pasar la revisión de gramática del README en inglés a la IA local o a Antigravity. No se pudo en ese momento: Ollama no, porque otro chat tenía Power BI abierto y quedaban 1,2 GB de RAM libres (la regla dice no cargar un modelo así); Antigravity no, porque `agy.exe` estaba corriendo para otro chat. La revisión la hice yo.
+
+## Auditoría de cálculos, pedida por Sergio (4-nov, noche)
+
+Sergio pidió revisar otra vez todos los cálculos, «porque es lo que más puede fallar», con agentes de Antigravity como revisores, y no parar hasta una vuelta sin fallas ni mejoras. Método de cada vuelta:
+1. Antigravity (Gemini 4 Argon, el modelo más fuerte de su plan) recibe las consultas SQL, las medidas DAX y las cifras del README, y busca errores de cálculo y de lógica. Va por fila: un pedido a la vez, con candado en `C:\Trabajo\_temporal\antigravity_en_uso.txt`.
+2. Yo compruebo cada hallazgo contra los datos antes de aceptarlo.
+3. Cada cifra del README se recalcula por un segundo camino (`scripts/auditoria_independiente.py`, Python puro sobre los CSV de Kaggle, sin DuckDB).
+
+### Auditoría, vuelta A
+
+**Lo que encontré yo antes de leer a Antigravity:**
+
+| Hallazgo | Comprobación | Veredicto |
+|---|---|---|
+| La recompra «primera entrega tarde» se medía hasta el final de los datos, y esos clientes compraron más tarde (tuvieron 297 días para volver contra 347) | Con la misma ventana de 180 días para todos: 2,86 % contra 2,45 % | **Cierto, grave.** La conclusión 5 decía «no es casualidad» (z 2,91) y no se sostiene |
+| 281 clientes tienen «dos pedidos» en el mismo segundo: es una sola compra partida | Volver a comprar = comprar otro día | **Cierto.** Clientes que vuelven: de 3,0 % a 2,2 %. Recompra según la primera entrega: 2,02 % contra 1,61 %, z = 1,71 (no alcanza 1,96) |
+| El promedio móvil de 3 meses promediaba porcentajes | Ponderado por pedidos | **Cierto, bajo.** Hasta 1 punto de diferencia (nov-2017: 7,0 % → 8,0 %). No está en el README |
+| Empates en los cortes de NTILE del RFM | Máximo 15 clientes empatados en un corte, de 94.990 | Sin efecto |
+| ¿Cambia la nota si se promedian las reseñas de un pedido en vez de tomar la más reciente? | Mismas cifras: 4,29, 1,73 y 0,38 | Sin efecto |
+| Flete con pedidos cancelados | Solo entregados: 16,6 % y 48,4 %, iguales | Sin efecto |
+
+**Lo que encontró Antigravity (parte 1: consultas 00 a 05), comprobado:**
+
+| # | Hallazgo de Antigravity | Comprobación con los datos | Veredicto |
+|---|---|---|---|
+| 1 | La fecha prometida viene a las 00:00: contando horas, la promesa sale ~0,6 días más corta y el colchón no cuadra con «tarde» | Promesa en días de calendario: 24,4 (antes 23,7). Entrega: 12,5 (antes 12,6) | **Cierto.** Entrega y promesa ahora en días de calendario, en el SQL y en Power Query |
+| 2 | Los pedidos con varios vendedores se suman más de una vez en la concentración, y el retraso se le carga a todos | 97.811 filas pedido-vendedor contra 96.470 pedidos | **Cierto en parte** (la unidad estaba documentada). Ahora solo pedidos de un vendedor (98,7 %): 58,7 % de los retrasos con 49,9 % de los pedidos. La conclusión no cambia |
+| 3 | NTILE(4) parte vendedores empatados entre cuartiles | 20 vendedores con el mismo % en dos cuartiles | **Cierto, bajo.** Ahora el cuartil sale de PERCENT_RANK y los empates quedan juntos |
+| 4 | Los extremos (-147 y +188 días) aplanan las pendientes de los tramos abiertos | Con tope de ±20 días: 7+ días pasa de +0,008 a -0,004 puntos por día | **Cierto, bajo.** Tope aplicado. La conclusión («desde el día 7 ya no baja») se mantiene |
+| 4b | En los retrasos largos, la reseña se escribe antes de recibir el paquete | 99,7 % de las reseñas con 7+ días de retraso; 48,2 % entre 1 y 6 días; 0,3 % a tiempo | **Cierto y nuevo:** explica por qué la nota toca piso. Agregado a la conclusión 3 |
+| 5 | Un chequeo de calidad usaba INNER JOIN y dejaba fuera un pedido sin pago; el flete incluye cancelados; la mediana de peso es por ítem vendido | 1 pedido sin pago. Flete igual con solo entregados | Pago: **cierto**, arreglado. Flete: **descartado** (no cambia nada). Peso: aclarado en el comentario |
+
+Antigravity también confirmó como correctos: la separación de `customer_id` y `customer_unique_id`, el filtro de entregados, la reseña única por pedido, sumar precio y flete por pedido antes de dividir, y el orden de ventanas con `QUALIFY`.
+
+Cifras del README que cambiaron: promesa 23,7 → 24,4 días; entrega 12,6 → 12,5; concentración 58,9/50,1 → 58,7/49,9; vuelven 3,0 % → 2,2 %; recompra 3,77/2,83 → 2,02/1,61; z 2,91 → 1,71; RFM 22,2/40,1 → 22,7/41,1. Dato nuevo: 99,7 %. El segundo camino (Python puro) da 28 de 28 iguales.
+
+**Lo que encontró Antigravity (parte 2: consultas 06 a 10), comprobado.** Antigravity revisó la versión anterior de estas consultas, y eso sirvió de control: encontró solo, sin que se lo dijera, el mismo sesgo de recompra que encontré yo.
+
+| # | Hallazgo de Antigravity | Comprobación con los datos | Veredicto |
+|---|---|---|---|
+| 1 | Recompra sesgada por el tiempo de observación | El mismo que encontré yo | Ya corregido |
+| 1b | Hay quien vuelve a comprar antes de recibir el primer pedido: eso no puede ser una reacción al retraso | 257 de 2.260 recompras (11 %) pasan antes de recibir | **Cierto.** Ahora: recompra después de recibir, en los 180 días siguientes a la entrega. A tiempo 1,85 %, tarde 1,37 %, z = 1,82: sigue por debajo de 1,96 |
+| 2 | «Ticket alto» era m = 5 (20 % que más gasta) en «Nuevos de ticket alto» y m ≥ 4 (40 %) en «Ticket alto que no volvió» | «Nuevos de ticket alto»: 7,5 % con m = 5, 15,5 % con m ≥ 4 | **Cierto.** La misma regla (m ≥ 4) en los dos. La cifra del README (22,7 % y 41,1 %) no cambia |
+| 3 | Las cohortes contaban la primera compra en el mes 0 (siempre 100 %) y escondían las recompras del mismo mes | 360 de los 2.065 clientes que vuelven lo hacen el mismo mes (17 %) | **Cierto.** Ahora solo cuentan compras de otro día, hasta ago-2018 |
+| 4 | Las rutas y «mismo estado contra otro estado» cuentan dos veces los pedidos de varios vendedores | 97.811 filas contra 96.470 pedidos | **Cierto.** Solo pedidos de un vendedor. SP → RJ: 8.048 pedidos, 14,3 % tarde. No está en el README |
+| 5 | Promedio móvil sin ponderar | El mismo que encontré yo | Ya corregido |
+| 6 | El 3,0 % general y las tasas por grupo se miden sobre poblaciones distintas y parecen contradecirse | Cierto: una es todo el período y la otra, 180 días desde la entrega | **Cierto, de claridad.** El README ahora dice «en todo el período» y «180 días desde que recibieron» |
+| 7 | Días prometidos medidos hasta las 00:00 | El mismo hallazgo de la parte 1 | Ya corregido |
+| 8 | NTILE(5) del RFM parte empates por `cliente_id` | Máximo 15 clientes empatados en un corte, de 94.990 | **Descartado:** sin efecto en ninguna cifra |
+
+Cifras del README que cambiaron por la parte 2: recompra 2,02/1,61 → 1,85/1,37; z 1,71 → 1,82. Segundo camino (Python puro): 28 de 28 iguales. Pruebas: 58 de 58.

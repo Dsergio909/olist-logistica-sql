@@ -64,8 +64,10 @@ def test_flete_por_rango_cubre_los_pedidos_con_productos(uno):
 
 
 def test_cohortes(uno):
-    assert uno("select min(pct_activos) from r_cohortes where mes_desde_primera = 0") == 100
-    assert uno("select max(pct_activos) from r_cohortes where mes_desde_primera > 0") < 5
+    # Solo compras de otro día: ningún mes llega ni cerca del 100 %, y el mes 0 sí tiene recompras.
+    assert uno("select max(pct_volvieron) from r_cohortes") < 5
+    assert uno("select sum(clientes_que_volvieron) from r_cohortes where mes_desde_primera = 0") > 0
+    assert uno("select max(cohorte + to_months(mes_desde_primera))::date from r_cohortes") <= __import__("datetime").date(2018, 8, 1)
     assert uno("select count(distinct cohorte) from r_cohortes") == 20
 
 
@@ -77,9 +79,9 @@ def test_rfm(uno):
 
 
 def test_recompra_misma_ventana_para_todos(con, uno):
-    """Cada cliente se mide 180 días: nadie de la prueba compró por primera vez después de feb-2018,
-    y la última compra de los datos queda después de esos 180 días."""
-    assert uno("select max(fecha_compra) from primera_compra where entregado and fecha_compra < '2018-03-01'")         + __import__("datetime").timedelta(days=180) <= uno("select max(fecha_compra) from compras_validas")
+    """Cada cliente se mide 180 días después de recibir su primer pedido: todos lo recibieron antes
+    de marzo de 2018, y la última compra de los datos queda después de esos 180 días."""
+    assert uno("select max(fecha_entrega_cliente) from primera_compra where entregado and fecha_entrega_cliente < '2018-03-01'")         + __import__("datetime").timedelta(days=180) <= uno("select max(fecha_compra) from compras_validas")
     # La z se recalcula aquí con las cuentas del CSV (proporción combinada).
     (n1, x1), (n2, x2) = con.execute("select clientes, volvieron from r_recompra_primera_entrega order by grupo").fetchall()
     p = (x1 + x2) / (n1 + n2)

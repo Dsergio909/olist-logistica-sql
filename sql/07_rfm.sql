@@ -38,7 +38,7 @@ select cliente_id, recencia_dias, frecuencia, round(monto, 2) as monto, r, f, m,
        case
            when f >= 2 and r >= 4                 then '1. Fieles activos'
            when f >= 2                            then '2. Fieles dormidos'
-           when f = 1 and m = 5 and r >= 4        then '3. Nuevos de ticket alto'
+           when f = 1 and m >= 4 and r >= 4       then '3. Nuevos de ticket alto'   -- ticket alto = m 4 o 5 (40 % que más gasta)
            when f = 1 and r >= 4                  then '4. Nuevos'
            when f = 1 and m >= 4                  then '5. Ticket alto que no volvió'
            else                                        '6. Una compra y se fueron'

@@ -95,12 +95,11 @@ def main() -> int:
         compras.sort()
         primera_fecha, primera = compras[0]
         p = pedidos[primera]
-        if p["entregado"] and primera_fecha < datetime(2018, 3, 1):
+        if p["entregado"] and p["entrega"] < datetime(2018, 3, 1):
             grupo = "tarde" if p["retraso"] > 0 else "a_tiempo"
             volvio[grupo][0] += 1
-            # otro día y dentro de los 180 días siguientes a la primera compra
-            volvio[grupo][1] += any(f.date() > primera_fecha.date() and f <= primera_fecha + timedelta(days=180)
-                                    for f, _ in compras[1:])
+            # después de recibir el primer pedido y dentro de los 180 días siguientes a la entrega
+            volvio[grupo][1] += any(p["entrega"] < f <= p["entrega"] + timedelta(days=180) for f, _ in compras)
 
     # 8-9. Días en la transportadora (pedidos con fecha de aprobación y de transportadora)
     def dias_transporte(tarde_o_no):
@@ -149,8 +148,7 @@ def main() -> int:
         return salida
     r_q = ntile(sorted(clientes, key=lambda c: (-c[1].timestamp(), c[0])))   # 1 = más reciente
     m_q = ntile(sorted(clientes, key=lambda c: (c[3], c[0])))                # 5 = gasta más
-    segmento = [c for c in clientes if c[2] == 1 and m_q[c[0]] >= 4 and (6 - r_q[c[0]]) <= 3
-                and not (m_q[c[0]] == 5 and (6 - r_q[c[0]]) >= 4)]
+    segmento = [c for c in clientes if c[2] == 1 and m_q[c[0]] >= 4 and (6 - r_q[c[0]]) <= 3]
     monto_total = sum(c[3] for c in clientes)
 
     rj = sum(p["estado"] == "RJ" for p in entregados)

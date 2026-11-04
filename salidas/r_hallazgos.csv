@@ -20,9 +20,9 @@ orden,clave,valor,decimales,descripcion
 19,flete_pct_menos_50,48.4,1,Flete como % del precio en pedidos de menos de R$50
 20,pct_flete_mayor_menos_50,10.2,1,% de esos pedidos donde el flete cuesta más que el producto
 21,pct_clientes_recompran,2.2,1,% de clientes que compraron en más de un día
-22,recompra_primera_a_tiempo,2.02,2,% que volvió en 180 días si la primera entrega llegó a tiempo
-23,recompra_primera_tarde,1.61,2,% que volvió en 180 días si la primera entrega llegó tarde
-24,z_recompra,1.71,2,"Prueba z de la diferencia (desde 1,96 se descarta la casualidad al 95 %)"
+22,recompra_primera_a_tiempo,1.85,2,% que volvió en 180 días si la primera entrega llegó a tiempo
+23,recompra_primera_tarde,1.37,2,% que volvió en 180 días si la primera entrega llegó tarde
+24,z_recompra,1.82,2,"Prueba z de la diferencia (desde 1,96 se descarta la casualidad al 95 %)"
 25,rfm_ticket_alto_pct_clientes,22.7,1,% de clientes: una compra de ticket alto y no volvieron
 26,rfm_ticket_alto_pct_monto,41.1,1,% del dinero que dejaron esos clientes
 27,pct_tarde_contando_mismo_dia,8.1,1,% tarde si también cuenta lo que llega el mismo día prometido

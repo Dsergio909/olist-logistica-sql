@@ -1,7 +1,7 @@
 segmento,clientes,pct_clientes,monto_total,pct_monto,monto_prom,compras_prom,recencia_prom_dias
 1. Fieles activos,1091,1.1,357040.0,2.3,327.26,2.14,93.0
 2. Fieles dormidos,974,1.0,306447.0,1.9,314.63,2.07,315.0
-3. Nuevos de ticket alto,7093,7.5,3205914.0,20.4,451.98,1.0,98.0
-4. Nuevos,29812,31.4,2891460.0,18.4,96.99,1.0,96.0
+3. Nuevos de ticket alto,14756,15.5,4477686.0,28.4,303.45,1.0,98.0
+4. Nuevos,22149,23.3,1619688.0,10.3,73.13,1.0,96.0
 5. Ticket alto que no volvió,21555,22.7,6473402.0,41.1,300.32,1.0,342.0
 6. Una compra y se fueron,34465,36.3,2504875.0,15.9,72.68,1.0,344.0

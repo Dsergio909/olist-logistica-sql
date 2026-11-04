@@ -50,8 +50,12 @@ select s.vendedor_estado,
        pv.precio
 from vendedor_pedidos vp
 join pedido_vendedor pv using (pedido_id, vendedor_id)
+join pedido_valor v using (pedido_id)
 join pedidos p using (pedido_id)
-join vendedores s using (vendedor_id);
+join vendedores s using (vendedor_id)
+-- Solo pedidos de un vendedor: si hay dos, el pedido se contaría dos veces y su
+-- fecha de entrega (una sola por pedido) se le cargaría a los dos.
+where v.vendedores = 1;
 
 create or replace table r_rutas as
 select vendedor_estado || ' -> ' || cliente_estado          as ruta,
