@@ -65,3 +65,33 @@ Quedan para la vuelta de mejora: el mapa corta algunas burbujas en los bordes, l
 | El generador borraba la caché de Power BI cada vez | Solo rehace `definition/`; Power BI aplica los cambios sin volver a cargar los datos |
 
 El `.pbix` final pesa 19,9 MB (límite del plan: 50 MB), así que va en el repo.
+
+## Vuelta 2 de mejora (4-nov): que un desconocido lo entienda y lo corra
+
+| Antes | Después |
+|---|---|
+| Para rehacer los datos había que bajar el zip de Kaggle a mano | `scripts/descargar_datos.py` los baja con `kagglehub` (pedido de Sergio) y cuenta las filas. Probado: bajó sin cuenta en 9 segundos, 9 de 9 archivos con las filas esperadas e idénticos byte a byte a la primera descarga |
+| El README no mostraba cómo se conecta todo | Diagrama (Kaggle → Parquet → SQL → salidas → Power BI → README) y tabla de qué consulta responde cada pregunta |
+| No decía cómo se comprobaron las cifras | Sección «Cómo comprobé las cifras»: pruebas, auditoría con Python puro y comparación del PDF del tablero |
+| `kaggle.json` (el token personal de Kaggle) no estaba en `.gitignore` | Agregado, y la prueba de privacidad lo exige |
+
+## Vuelta 3 de mejora (4-nov): pruebas para el tablero
+
+Antes, si alguien cambiaba una medida o un gráfico, solo se notaba abriendo Power BI. Ahora `pruebas/test_tablero.py` (9 pruebas) revisa sin Power BI:
+- que las 4 páginas estén y que todos los JSON se lean;
+- que cada gráfico use columnas y medidas que existen en el modelo;
+- que cada fórmula DAX cite columnas y medidas que existen;
+- que `dax/medidas.md` y el modelo estén al día con el generador;
+- que Power Query devuelva exactamente las columnas del modelo;
+- que el `.pbix` pese menos de 50 MB y que el tablero use un solo color de acento.
+
+Sabotaje para comprobarlo: cambié el nombre de una medida en un gráfico y la prueba falló; al restaurar, 58 de 58 en verde (antes 49).
+
+## Facilidad y diseño (4-nov)
+
+- README: un resumen de una frase arriba («En 30 segundos») con las 4 cifras que importan. La prueba de cifras ahora cubre desde el título hasta las conclusiones.
+- Tablero: fondo blanco, un solo acento verde oscuro (#1d4a35, el del portafolio), grises para lo secundario y letra Segoe UI. Sin neón, sin fondo oscuro, sin adornos. Cada página abre con su pregunta como título.
+
+## IA local y Antigravity
+
+Por la regla nueva de Sergio (4-nov) intenté pasar la revisión de gramática del README en inglés a la IA local o a Antigravity. No se pudo en ese momento: Ollama no, porque otro chat tenía Power BI abierto y quedaban 1,2 GB de RAM libres (la regla dice no cargar un modelo así); Antigravity no, porque `agy.exe` estaba corriendo para otro chat. La revisión la hice yo.

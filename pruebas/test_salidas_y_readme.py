@@ -43,7 +43,7 @@ def test_readme_cita_las_cifras_de_los_datos(hallazgos, archivo, idioma):
     assert not faltan, f"{archivo} no cita estas cifras de r_hallazgos: {faltan}"
 
 
-SECCION = {"es": ("## Qué encontré", "## Cómo explicarlo"), "en": ("## What I found", "## How to explain")}
+SECCION = {"es": ("# Olist", "## Cómo explicarlo"), "en": ("# Olist", "## How to explain")}
 # Números de la sección que no son resultados: el umbral de la prueba z.
 NO_SON_RESULTADOS = {"1,96", "1.96"}
 

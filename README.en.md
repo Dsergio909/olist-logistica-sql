@@ -4,6 +4,8 @@
 
 I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to answer three logistics questions: where deliveries get delayed, how much shipping weighs on the price, and which sellers deliver on time. I used SQL (DuckDB) and a 4-page Power BI dashboard.
 
+> **In 30 seconds:** 6.8% of deliveries arrive late, but in 72.2% of those cases the seller shipped on time: the problem is transport. And being late is expensive: the review score drops from 4.29 to 1.73 within a week of delay, and fewer customers come back.
+
 ![Logistics page of the dashboard](capturas/01_logistica.png)
 
 ## What I found
@@ -55,13 +57,36 @@ The dashboard labels are in Spanish. Screenshots: [sellers](capturas/02_vendedor
 - **What I changed:** I converted the CSVs to Parquet (126 MB down to 22 MB, same rows). I removed the review comment text, because the analysis does not use it and it is text written by people. And I reduced geolocation to one point per zip code. `scripts/preparar_datos.py` does all of this from the Kaggle CSVs.
 - **How I count "late":** the order arrived after the promised day, comparing calendar days. Arriving on the promised day counts as on time. Note: Olist stores the promised date at 00:00, so if you compare timestamps, everything delivered on that same day shows up as late and the rate goes up to 8.1%. That is why other Olist analyses report that number.
 
+## How it fits together
+
+```mermaid
+flowchart LR
+    A[Kaggle: 9 Olist CSVs] -->|scripts/preparar_datos.py| B[datos/: Parquet]
+    B -->|DuckDB| C[sql/: 11 queries]
+    C --> D[salidas/: CSV results]
+    B -->|Power Query| E[Power BI dashboard]
+    D -->|RFM and repeat purchase| E
+    D -->|r_hallazgos| F[README: every number checked by pytest]
+```
+
+| Question | Query |
+|---|---|
+| Does it arrive when promised? In which states does it fail? | `sql/02_entrega_por_estado.sql` |
+| Which sellers deliver? Are delays concentrated? | `sql/03_entrega_por_vendedor.sql` |
+| How much does shipping weigh against price? | `sql/04_flete.sql` |
+| How much does the score drop per day of delay? | `sql/05_demora_vs_resena.sql` |
+| Do customers come back? Does the first delivery matter? | `sql/06_cohortes_recompra.sql` |
+| Who buys often and how much (RFM)? | `sql/07_rfm.sql` |
+| Which stage takes the time? Which routes fail? | `sql/08_rutas_y_etapas.sql` |
+| When did delays spike? | `sql/09_mes_a_mes.sql` |
+
 ## What is in the repo
 
 | Folder | Contents |
 |---|---|
 | `sql/` | 11 numbered, commented queries: clean base, data quality, deliveries by state and by seller, shipping, delay vs review, repeat-purchase cohorts, RFM, routes and stages, month by month, and the README numbers |
 | `salidas/` | The result of each query as CSV |
-| `pruebas/` | pytest tests: Kaggle totals, queries that reconcile with each other, README numbers that match the data, and privacy |
+| `pruebas/` | pytest tests: Kaggle totals, queries that reconcile with each other, README numbers that match the data, dashboard fields and measures that exist, and privacy |
 | `powerbi/` | The dashboard as a text project (PBIP), the `.pbix` and its generator |
 | `dax/medidas.md` | The DAX measures |
 | `capturas/`, `tablero.pdf` | Screenshots and PDF of the dashboard |
@@ -83,9 +108,24 @@ python scripts/correr_sql.py     # runs the 11 queries and writes salidas/
 python -m pytest                 # the tests
 ```
 
-No Kaggle download needed: the data is already in `datos/`. To start from the original CSVs, put them in `datos_crudos/` and run `python scripts/preparar_datos.py`.
+No Kaggle download needed: the data is already in `datos/`. To rebuild it from the original CSVs:
+
+```bash
+pip install kagglehub
+python scripts/descargar_datos.py   # downloads the 9 CSVs to datos_crudos/ and counts rows
+python scripts/preparar_datos.py    # converts them to Parquet in datos/
+```
+
+The dataset is public and downloads without an account. If Kaggle ever asks for credentials, the script explains how to create the token (that file never goes into the repo).
 
 **Power BI:** open `powerbi/OlistLogistica.pbix` (data included). For the text project, open `powerbi/OlistLogistica.pbip`, go to Transform data → Parameters, set `CarpetaRepo` to the folder where you cloned the repo and click Refresh.
+
+## How I checked the numbers
+
+- **58 pytest tests**, run automatically on GitHub Actions: Kaggle totals, queries that reconcile with each other, `salidas/` matching what the SQL produces, privacy, and the README quoting exactly the numbers in `salidas/r_hallazgos.csv` (if I edit a number by hand, the test fails).
+- **A second route:** `scripts/auditoria_independiente.py` recomputes 19 numbers with plain Python from the Kaggle CSVs, without DuckDB. They match.
+- **Dashboard vs SQL:** `scripts/comparar_tablero.py` reads the Power BI PDF and compares 88 numbers with `salidas/`. They match.
+- Everything I reviewed and fixed is in [REVISION.md](REVISION.md) (in Spanish).
 
 ## Limits
 

@@ -6,6 +6,7 @@ __pycache__/
 .pytest_cache/
 # Claves y archivos locales
 .env
+kaggle.json
 *.duckdb
 *.duckdb.wal
 # Archivos temporales de Power BI

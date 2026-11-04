@@ -4,6 +4,8 @@
 
 Analicé 99.441 pedidos reales de Olist, una tienda en línea de Brasil, para responder tres preguntas de logística: dónde se demoran las entregas, cuánto pesa el flete y qué vendedores cumplen. Lo hice con SQL (DuckDB) y un tablero de Power BI de 4 páginas.
 
+> **En 30 segundos:** el 6,8 % de las entregas llega tarde, pero en el 72,2 % de esos casos el vendedor despachó a tiempo: el problema está en el transporte. Y llegar tarde sale caro: la nota baja de 4,29 a 1,73 en una semana de retraso, y vuelven a comprar menos clientes.
+
 ![Página de logística del tablero](capturas/01_logistica.png)
 
 ## Qué encontré
@@ -60,13 +62,36 @@ Las medidas DAX están en [dax/medidas.md](dax/medidas.md), para leerlas sin abr
 - **Lo que cambié:** pasé los CSV a Parquet (de 126 MB a 22 MB, mismas filas). Quité el texto de los comentarios de las reseñas, porque el análisis no lo usa y es texto escrito por personas. Y resumí la geolocalización a un punto por código postal. `scripts/preparar_datos.py` hace todo esto desde los CSV de Kaggle.
 - **Cómo cuento "tarde":** el pedido llegó después del día prometido, comparando días de calendario. Si llegó el mismo día prometido, cuenta como a tiempo. Ojo: Olist guarda la fecha prometida a las 00:00, así que si se comparan horas, todo lo que llega ese mismo día sale como tarde y el porcentaje sube a 8,1 %. Por eso otros análisis de Olist dan esa cifra.
 
+## Cómo está armado
+
+```mermaid
+flowchart LR
+    A[Kaggle: 9 CSV de Olist] -->|scripts/preparar_datos.py| B[datos/: Parquet]
+    B -->|DuckDB| C[sql/: 11 consultas]
+    C --> D[salidas/: resultados en CSV]
+    B -->|Power Query| E[Tablero de Power BI]
+    D -->|RFM y recompra| E
+    D -->|r_hallazgos| F[README: cada cifra comprobada por pytest]
+```
+
+| Pregunta | Consulta |
+|---|---|
+| ¿Llega cuando se prometió? ¿En qué estados falla? | `sql/02_entrega_por_estado.sql` |
+| ¿Qué vendedores cumplen? ¿Se concentran los retrasos? | `sql/03_entrega_por_vendedor.sql` |
+| ¿Cuánto pesa el flete frente al precio? | `sql/04_flete.sql` |
+| ¿Cuánto baja la nota con cada día de retraso? | `sql/05_demora_vs_resena.sql` |
+| ¿Los clientes vuelven? ¿Influye la primera entrega? | `sql/06_cohortes_recompra.sql` |
+| ¿Quiénes compran seguido y cuánto (RFM)? | `sql/07_rfm.sql` |
+| ¿En qué etapa se va el tiempo? ¿Qué rutas fallan? | `sql/08_rutas_y_etapas.sql` |
+| ¿Cuándo se dispararon los retrasos? | `sql/09_mes_a_mes.sql` |
+
 ## Qué hay en el repo
 
 | Carpeta | Qué tiene |
 |---|---|
 | `sql/` | 11 consultas numeradas y comentadas: base limpia, calidad de datos, entregas por estado y por vendedor, flete, demora contra reseña, cohortes de recompra, RFM, rutas y etapas, mes a mes, y las cifras del README |
 | `salidas/` | El resultado de cada consulta en CSV |
-| `pruebas/` | Pruebas con pytest: totales de Kaggle, que las consultas cuadren entre sí, que el README cite las cifras exactas y privacidad |
+| `pruebas/` | Pruebas con pytest: totales de Kaggle, que las consultas cuadren entre sí, que el README cite las cifras exactas, que el tablero use campos y medidas que existen, y privacidad |
 | `powerbi/` | El tablero como proyecto de texto (PBIP), el `.pbix` y el generador |
 | `dax/medidas.md` | Las medidas DAX |
 | `capturas/`, `tablero.pdf` | Capturas y PDF del tablero |
@@ -88,9 +113,24 @@ python scripts/correr_sql.py     # corre las 11 consultas y escribe salidas/
 python -m pytest                 # las pruebas
 ```
 
-No hace falta bajar nada de Kaggle: los datos ya están en `datos/`. Si quieres partir de los CSV originales, ponlos en `datos_crudos/` y corre `python scripts/preparar_datos.py`.
+No hace falta bajar nada de Kaggle: los datos ya están en `datos/`. Si quieres rehacerlos desde los CSV originales:
+
+```bash
+pip install kagglehub
+python scripts/descargar_datos.py   # baja los 9 CSV a datos_crudos/ y cuenta las filas
+python scripts/preparar_datos.py    # los pasa a Parquet en datos/
+```
+
+El dataset es público y baja sin cuenta. Si Kaggle llegara a pedir credenciales, el script explica cómo crear el token (y ese archivo nunca va al repo).
 
 **Power BI:** abre `powerbi/OlistLogistica.pbix` (trae los datos adentro). Si prefieres el proyecto de texto, abre `powerbi/OlistLogistica.pbip`, ve a Transformar datos → Parámetros, cambia `CarpetaRepo` a la carpeta donde clonaste el repo y pulsa Actualizar.
+
+## Cómo comprobé las cifras
+
+- **58 pruebas con pytest**, que corren solas en GitHub Actions: totales de Kaggle, que las consultas cuadren entre sí, que `salidas/` sea lo que sale del SQL, privacidad y que el README cite exactamente las cifras de `salidas/r_hallazgos.csv` (si cambio un número a mano, la prueba falla).
+- **Por otro camino:** `scripts/auditoria_independiente.py` recalcula 19 cifras con Python puro desde los CSV de Kaggle, sin DuckDB. Dan iguales.
+- **El tablero contra el SQL:** `scripts/comparar_tablero.py` lee el PDF de Power BI y compara 88 cifras con `salidas/`. Dan iguales.
+- Todo lo que revisé y arreglé está en [REVISION.md](REVISION.md).
 
 ## Qué falta
 

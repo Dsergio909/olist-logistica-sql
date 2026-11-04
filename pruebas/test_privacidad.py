@@ -53,5 +53,5 @@ def test_vendedores_solo_ids_anonimos():
 
 def test_gitignore_protege_lo_local():
     texto = (RAIZ / ".gitignore").read_text(encoding="utf-8")
-    for patron in ("datos_crudos/", ".venv/", ".env"):
+    for patron in ("datos_crudos/", ".venv/", ".env", "kaggle.json"):
         assert patron in texto
