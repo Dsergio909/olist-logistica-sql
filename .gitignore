@@ -1,0 +1,14 @@
+# Datos de Kaggle tal cual se descargan (se regeneran con scripts/preparar_datos.py)
+datos_crudos/
+# Entorno de Python y cachés
+.venv/
+__pycache__/
+.pytest_cache/
+# Claves y archivos locales
+.env
+*.duckdb
+*.duckdb.wal
+# Archivos temporales de Power BI
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/cache.abf
+~$*

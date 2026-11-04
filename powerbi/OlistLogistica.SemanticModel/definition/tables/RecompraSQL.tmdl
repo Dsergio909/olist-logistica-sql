@@ -1,0 +1,60 @@
+/// Recompra según la primera entrega, calculada en sql/06_cohortes_recompra.sql.
+table RecompraSQL
+	lineageTag: 78a89c11-c8d3-50bc-ae2f-71adedbdc0f1
+
+	column grupo
+		dataType: string
+		lineageTag: 42bde21a-49a8-586c-8795-1ff6c03ba7b7
+		summarizeBy: none
+		sourceColumn: grupo
+
+		annotation SummarizationSetBy = Automatic
+
+	column clientes
+		dataType: int64
+		formatString: #,0
+		lineageTag: 076af569-785c-52b1-bf83-ec387e02a926
+		summarizeBy: none
+		sourceColumn: clientes
+
+		annotation SummarizationSetBy = Automatic
+
+	column volvieron
+		dataType: int64
+		formatString: #,0
+		lineageTag: 77e69e17-dcfc-5a54-9b82-03babfa51126
+		summarizeBy: none
+		sourceColumn: volvieron
+
+		annotation SummarizationSetBy = Automatic
+
+	column pct_volvio
+		dataType: double
+		formatString: 0.00
+		lineageTag: c1f7f1b0-04ef-5562-b415-1f676fafce95
+		summarizeBy: none
+		sourceColumn: pct_volvio
+
+		annotation SummarizationSetBy = Automatic
+
+	column z_diferencia
+		dataType: double
+		formatString: 0.00
+		lineageTag: 56f5c70c-a5ad-5da4-86ac-200607e5cf35
+		summarizeBy: none
+		sourceColumn: z_diferencia
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RecompraSQL = m
+		mode: import
+		source =
+				let
+				    // Resultado de sql/06_cohortes_recompra.sql (la prueba z está en el CSV)
+				    Origen = Csv.Document(File.Contents(CarpetaRepo & "salidas\r_recompra_primera_entrega.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Tipos = Table.TransformColumnTypes(Encabezados, {{"grupo", type text}, {"clientes", Int64.Type}, {"volvieron", Int64.Type},
+				        {"pct_volvio", type number}, {"z_diferencia", type number}}, "en-US")
+				in
+				    Tipos
+

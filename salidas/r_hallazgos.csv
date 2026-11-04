@@ -1,0 +1,27 @@
+orden,clave,valor,decimales,descripcion
+1,pedidos_total,99441.0,0,Pedidos en los datos
+2,pedidos_entregados,96470.0,0,Pedidos entregados con fecha
+3,pedidos_tarde,6534.0,0,Entregados después de la fecha prometida
+4,pct_tarde,6.8,1,% de entregas tarde
+5,dias_entrega_prom,12.6,1,Días promedio de la compra a la entrega
+6,dias_prometidos_prom,23.7,1,Días promedio que promete Olist
+7,pct_retrasos_vendedor_a_tiempo,72.2,1,% de los pedidos tarde en que el vendedor despachó a tiempo
+8,dias_transportadora_tarde,27.9,1,"Días en la transportadora, pedidos tarde"
+9,dias_transportadora_a_tiempo,8.0,1,"Días en la transportadora, pedidos a tiempo"
+10,top5_pct_retrasos,58.9,1,% de los retrasos del 5 % de vendedores con más retrasos
+11,top5_pct_pedidos,50.1,1,% de los pedidos de ese mismo 5 %
+12,rj_pct_entregas,12.8,1,% de las entregas que van a Rio de Janeiro
+13,rj_pct_retrasos,22.9,1,% de los retrasos que van a Rio de Janeiro
+14,nota_a_tiempo,4.29,2,Nota promedio si llega a tiempo
+15,puntos_por_dia_1_a_6,0.38,2,Puntos de nota que se pierden por cada día tarde (1 a 6 días)
+16,nota_7_dias_o_mas,1.73,2,Nota promedio con 7 o más días de retraso
+17,flete_pct_total,16.6,1,"Flete como % del precio, todos los pedidos"
+18,pct_pedidos_menos_50,29.8,1,% de pedidos de menos de R$50
+19,flete_pct_menos_50,48.4,1,Flete como % del precio en pedidos de menos de R$50
+20,pct_flete_mayor_menos_50,10.2,1,% de esos pedidos donde el flete cuesta más que el producto
+21,pct_clientes_recompran,3.0,1,% de clientes con más de un pedido
+22,recompra_primera_a_tiempo,3.77,2,% que volvió si la primera entrega llegó a tiempo
+23,recompra_primera_tarde,2.83,2,% que volvió si la primera entrega llegó tarde
+24,z_recompra,2.91,2,"Prueba z de la diferencia (más de 1,96 = no es casualidad al 95 %)"
+25,rfm_ticket_alto_pct_clientes,22.2,1,% de clientes: una compra de ticket alto y no volvieron
+26,rfm_ticket_alto_pct_monto,40.1,1,% del dinero que dejaron esos clientes

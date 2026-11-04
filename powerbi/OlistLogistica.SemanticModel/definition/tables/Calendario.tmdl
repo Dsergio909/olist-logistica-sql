@@ -1,0 +1,54 @@
+/// Un día por fila, de sep-2016 a dic-2018.
+table Calendario
+	lineageTag: 574475e2-75d3-53c3-9410-3052cdb04095
+
+	column Fecha
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 12883464-6adc-5b7c-86d0-16443a035aba
+		summarizeBy: none
+		sourceColumn: Fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 6b090e63-37a0-59cb-acdc-47946efcb0d1
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = Automatic
+
+	column inicio_mes
+		dataType: dateTime
+		formatString: mmm yyyy
+		isHidden
+		lineageTag: ae98906c-cf26-5b32-a516-68fad04ec286
+		summarizeBy: none
+		sourceColumn: inicio_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: string
+		lineageTag: 19289e4c-b62c-52c1-b440-7e3133ff4c48
+		summarizeBy: none
+		sourceColumn: mes
+		sortByColumn: inicio_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Calendario = m
+		mode: import
+		source =
+				let
+				    Dias = List.Dates(#date(2016, 9, 1), Duration.Days(#date(2018, 12, 31) - #date(2016, 9, 1)) + 1, #duration(1, 0, 0, 0)),
+				    Tabla = Table.FromList(Dias, Splitter.SplitByNothing(), type table [Fecha = date]),
+				    Anio = Table.AddColumn(Tabla, "anio", each Date.Year([Fecha]), Int64.Type),
+				    InicioMes = Table.AddColumn(Anio, "inicio_mes", each Date.StartOfMonth([Fecha]), type date),
+				    NombresMes = {"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"},
+				    Mes = Table.AddColumn(InicioMes, "mes", each NombresMes{Date.Month([Fecha]) - 1} & " " & Text.From(Date.Year([Fecha])), type text)
+				in
+				    Mes
+

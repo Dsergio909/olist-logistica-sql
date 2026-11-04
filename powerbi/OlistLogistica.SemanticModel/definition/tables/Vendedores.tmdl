@@ -1,0 +1,49 @@
+/// Vendedores de Olist (id anónimo).
+table Vendedores
+	lineageTag: 65c15fdd-6f6d-52cd-a873-8a329a6e62ca
+
+	column vendedor_id
+		dataType: string
+		lineageTag: 08238910-7d7a-5b6a-bd80-f2c5bdb270ac
+		summarizeBy: none
+		sourceColumn: vendedor_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column vendedor_corto
+		dataType: string
+		lineageTag: 32ce95bc-7ca1-55c2-bc13-d9d14a7e07b4
+		summarizeBy: none
+		sourceColumn: vendedor_corto
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_vendedor
+		dataType: string
+		lineageTag: 7fbfa53a-7c24-57c9-aa58-84f2f1e51c5c
+		summarizeBy: none
+		sourceColumn: estado_vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column ciudad_vendedor
+		dataType: string
+		lineageTag: bec6cac7-38f2-5d34-8d7b-fca1584679b2
+		summarizeBy: none
+		sourceColumn: ciudad_vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Vendedores = m
+		mode: import
+		source =
+				let
+				    Origen = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_sellers_dataset.parquet")),
+				    Nombres = Table.RenameColumns(Origen, {{"seller_id", "vendedor_id"}, {"seller_city", "ciudad_vendedor"}, {"seller_state", "estado_vendedor"}}),
+				    // Los id de Olist son anónimos y largos: muestro los 8 primeros caracteres
+				    Corto = Table.AddColumn(Nombres, "vendedor_corto", each Text.Start([vendedor_id], 8), type text),
+				    Ciudad = Table.TransformColumns(Corto, {{"ciudad_vendedor", Text.Proper, type text}}),
+				    Final = Table.SelectColumns(Ciudad, {"vendedor_id", "vendedor_corto", "estado_vendedor", "ciudad_vendedor"})
+				in
+				    Final
+

@@ -1,0 +1,229 @@
+/// Todas las medidas DAX del tablero.
+table Medidas
+	lineageTag: dffc5ff4-17ed-5c1d-b67d-84d8c82fc813
+
+	/// Todos los pedidos, en cualquier estado.
+	measure 'Pedidos (todos)' = COUNTROWS ( Pedidos )
+		formatString: #,0
+		displayFolder: Logística
+		lineageTag: 1dac55bb-b6c8-57da-9191-18b2f63a67b3
+
+	/// Pedidos con estado delivered y fecha de entrega. Es la base de los tiempos.
+	measure 'Pedidos entregados' = CALCULATE ( COUNTROWS ( Pedidos ), Pedidos[entregado] = TRUE () )
+		formatString: #,0
+		displayFolder: Logística
+		lineageTag: 3a4e9919-06b7-5853-8d5d-7cf71fa16ca3
+
+	/// Entregados después del día prometido.
+	measure 'Pedidos tarde' = CALCULATE ( COUNTROWS ( Pedidos ), Pedidos[tarde] = TRUE () )
+		formatString: #,0
+		displayFolder: Logística
+		lineageTag: 39b26e00-17d9-57da-82ba-59d5971c73e0
+
+	/// Parte de las entregas que llegó tarde.
+	measure '% tarde' = DIVIDE ( [Pedidos tarde], [Pedidos entregados] )
+		formatString: 0.0%
+		displayFolder: Logística
+		lineageTag: e160b110-e594-5db9-ae78-d61a6e22de47
+
+	/// Igual, pero solo de ene-2017 a ago-2018 (los meses con datos completos), para la línea de tiempo.
+	measure '% tarde (meses completos)' = CALCULATE ( [% tarde], Pedidos[mes_completo] = TRUE () )
+		formatString: 0.0%
+		displayFolder: Logística
+		lineageTag: a70b8d44-15f4-5092-83c2-ab3f1f58c93e
+
+	/// Días promedio de la compra a la entrega.
+	measure 'Días de entrega' = CALCULATE ( AVERAGE ( Pedidos[dias_entrega] ), Pedidos[entregado] = TRUE () )
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 9898fd8f-3575-5514-b249-20c8517f36cc
+
+	/// Días promedio que la tienda prometió al comprar.
+	measure 'Días prometidos' = CALCULATE ( AVERAGE ( Pedidos[dias_prometidos] ), Pedidos[entregado] = TRUE () )
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 54254ad8-5895-5e32-92af-54f5ba88e9e4
+
+	/// Cuántos días antes de lo prometido llega, en promedio.
+	measure 'Colchón (días)' = [Días prometidos] - [Días de entrega]
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 658df102-7dd6-5668-ba4f-a0aeb8c5dac2
+
+	/// De la compra a la aprobación del pago.
+	measure 'Aprobar el pago (días)' = AVERAGE ( Pedidos[dias_aprobacion] )
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 9f866782-a423-5e28-b97d-8b4b93e030a4
+
+	/// De la aprobación a la entrega a la transportadora.
+	measure 'Vendedor despacha (días)' = AVERAGE ( Pedidos[dias_vendedor] )
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 54f67983-dbf1-51e7-96ab-09db8ee4dd35
+
+	/// De la transportadora a la puerta del cliente.
+	measure 'Transportadora (días)' = AVERAGE ( Pedidos[dias_transportadora] )
+		formatString: 0.0
+		displayFolder: Logística
+		lineageTag: 36a01e60-1b70-5353-8d66-a192f8c6f486
+
+	/// Para el mapa de burbujas (eje Y).
+	measure Latitud = AVERAGE ( Estados[lat] )
+		formatString: 0.00
+		displayFolder: Logística
+		lineageTag: 50a81de8-18a1-52fd-a8d5-1aa34e62a3c3
+
+	/// Para el mapa de burbujas (eje X).
+	measure Longitud = AVERAGE ( Estados[lng] )
+		formatString: 0.00
+		displayFolder: Logística
+		lineageTag: b646fa9d-f787-5a27-8643-d7df73768f25
+
+	/// Vendedores con al menos un pedido.
+	measure 'Vendedores con ventas' = DISTINCTCOUNT ( PedidoVendedor[vendedor_id] )
+		formatString: #,0
+		displayFolder: Vendedores
+		lineageTag: 5a4b2a95-5ee7-5d91-8064-9bc82e65c571
+
+	/// Unidad: lo que despachó un vendedor en un pedido.
+	measure 'Pedidos de vendedor entregados' = CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[entregado] = TRUE () )
+		formatString: #,0
+		displayFolder: Vendedores
+		lineageTag: bf547c60-1ffc-533c-906c-3d944ecadeeb
+
+	measure 'Pedidos de vendedor tarde' = CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[tarde] = TRUE () )
+		formatString: #,0
+		displayFolder: Vendedores
+		lineageTag: f50cb669-c042-53ec-aaca-4fffc217f01e
+
+	measure '% tarde (vendedor)' = DIVIDE ( [Pedidos de vendedor tarde], [Pedidos de vendedor entregados] )
+		formatString: 0.0%
+		displayFolder: Vendedores
+		lineageTag: 83641a4a-fcaf-5dfd-ab2b-ff13f010d31e
+
+	/// El vendedor entregó a la transportadora después de su fecha límite.
+	measure '% despacho tarde' =
+			DIVIDE (
+			    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[despacho] = "Tarde" ),
+			    [Pedidos de vendedor entregados]
+			)
+		formatString: 0.0%
+		displayFolder: Vendedores
+		lineageTag: 3db54ef9-8c78-5ffe-af13-c8ec2c258fab
+
+	/// De los pedidos que llegaron tarde (de un solo vendedor), en cuántos el vendedor sí despachó a tiempo.
+	measure '% de los retrasos con despacho a tiempo' =
+			VAR TardeConDato =
+			    CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] <> "Sin dato" )
+			VAR TardeDespachoATiempo =
+			    CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] = "A tiempo" )
+			RETURN
+			    DIVIDE ( TardeDespachoATiempo, TardeConDato )
+		formatString: 0.0%
+		displayFolder: Vendedores
+		lineageTag: d247f36c-a506-520f-8283-2af66e6049d9
+
+	measure 'Nota (vendedor)' = CALCULATE ( AVERAGE ( PedidoVendedor[nota] ), PedidoVendedor[entregado] = TRUE () )
+		formatString: 0.00
+		displayFolder: Vendedores
+		lineageTag: 237ff351-c110-5f3c-bf6d-f4528a870c52
+
+	/// Personas distintas (customer_unique_id) con compras válidas.
+	measure Clientes = COUNTROWS ( RFM )
+		formatString: #,0
+		displayFolder: Clientes
+		lineageTag: 906aa632-386b-59cf-87eb-7bbbe6757960
+
+	measure '% clientes' = DIVIDE ( [Clientes], CALCULATE ( [Clientes], ALL ( RFM ) ) )
+		formatString: 0.0%
+		displayFolder: Clientes
+		lineageTag: 81e081fb-1813-5673-a2b5-447894833227
+
+	/// Total pagado, en reales.
+	measure Monto = SUM ( RFM[monto] )
+		formatString: #,0
+		displayFolder: Clientes
+		lineageTag: bae4d216-a4d8-5173-8141-96961df26afe
+
+	measure '% del dinero' = DIVIDE ( [Monto], CALCULATE ( [Monto], ALL ( RFM ) ) )
+		formatString: 0.0%
+		displayFolder: Clientes
+		lineageTag: 2a954f1a-e5ad-5562-abce-91c98ba2b170
+
+	/// Clientes con más de un pedido.
+	measure '% que vuelve a comprar' = DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )
+		formatString: 0.0%
+		displayFolder: Clientes
+		lineageTag: 41912253-1e1f-567d-b34f-142d24bf5a66
+
+	measure 'Gasto por pedido (R$)' = DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )
+		formatString: #,0.00
+		displayFolder: Clientes
+		lineageTag: d60c9153-ce4b-53c0-ae94-c1283af596aa
+
+	/// Suma de fletes sobre suma de precios.
+	measure 'Flete % del precio' = DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )
+		formatString: 0.0%
+		displayFolder: Clientes
+		lineageTag: 3963a7fc-de91-537d-850c-fa02aa3d4194
+
+	/// Del resultado SQL: clientes que volvieron después de su primera compra.
+	measure '% volvió a comprar' = DIVIDE ( SUM ( RecompraSQL[volvieron] ), SUM ( RecompraSQL[clientes] ) )
+		formatString: 0.00%
+		displayFolder: Clientes
+		lineageTag: ae6c9107-0f3a-5aaf-86d3-dbde105676c9
+
+	/// Nota de 1 a 5 de los pedidos entregados.
+	measure 'Nota promedio' = CALCULATE ( AVERAGE ( Pedidos[nota] ), Pedidos[entregado] = TRUE () )
+		formatString: 0.00
+		displayFolder: Reseñas
+		lineageTag: b2ba0f22-157e-50ae-be11-02b43b879613
+
+	measure 'Nota promedio (meses completos)' = CALCULATE ( [Nota promedio], Pedidos[mes_completo] = TRUE () )
+		formatString: 0.00
+		displayFolder: Reseñas
+		lineageTag: ebab7d62-259b-5278-bb98-3f57ee5c5700
+
+	/// Se usa IN { 1, 2 } y no <= 2, porque en DAX una nota vacía cuenta como menor que 2.
+	measure '% notas de 1 o 2' =
+			DIVIDE (
+			    CALCULATE ( COUNTROWS ( Pedidos ), Pedidos[nota] IN { 1, 2 }, Pedidos[entregado] = TRUE () ),
+			    CALCULATE ( COUNT ( Pedidos[nota] ), Pedidos[entregado] = TRUE () )
+			)
+		formatString: 0.0%
+		displayFolder: Reseñas
+		lineageTag: 53072e45-8c3c-50a6-8812-39dd943a098d
+
+	measure 'Nota si llega a tiempo' = CALCULATE ( [Nota promedio], Pedidos[tarde] = FALSE () )
+		formatString: 0.00
+		displayFolder: Reseñas
+		lineageTag: 6ef5f122-58e6-5181-90d2-622b280ae7de
+
+	measure 'Nota 1 a 6 días tarde' = CALCULATE ( [Nota promedio], Pedidos[dias_retraso] >= 1, Pedidos[dias_retraso] <= 6 )
+		formatString: 0.00
+		displayFolder: Reseñas
+		lineageTag: a9f36710-dd56-5d1e-ace3-482a561c0a9f
+
+	measure 'Nota 7 o más días tarde' = CALCULATE ( [Nota promedio], Pedidos[dias_retraso] >= 7 )
+		formatString: 0.00
+		displayFolder: Reseñas
+		lineageTag: 8b6a4a83-6617-5493-ad87-18babcfcbbad
+
+	column columna
+		dataType: string
+		isHidden
+		lineageTag: 6d6e7e64-7c34-59a4-877b-d122497b260d
+		summarizeBy: none
+		sourceColumn: columna
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Medidas = m
+		mode: import
+		source =
+				let
+				    Vacia = #table(type table [columna = text], {})
+				in
+				    Vacia
+

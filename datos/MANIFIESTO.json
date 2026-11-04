@@ -1,0 +1,27 @@
+{
+  "fuente": "https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce",
+  "licencia": "CC BY-NC-SA 4.0",
+  "filas_csv_original": {
+    "olist_customers_dataset": 99441,
+    "olist_geolocation_dataset": 1000163,
+    "olist_order_items_dataset": 112650,
+    "olist_order_payments_dataset": 103886,
+    "olist_order_reviews_dataset": 99224,
+    "olist_orders_dataset": 99441,
+    "olist_products_dataset": 32951,
+    "olist_sellers_dataset": 3095,
+    "product_category_name_translation": 71
+  },
+  "filas_parquet": {
+    "olist_customers_dataset": 99441,
+    "olist_geolocation_dataset": 19015,
+    "olist_order_items_dataset": 112650,
+    "olist_order_payments_dataset": 103886,
+    "olist_order_reviews_dataset": 99224,
+    "olist_orders_dataset": 99441,
+    "olist_products_dataset": 32951,
+    "olist_sellers_dataset": 3095,
+    "product_category_name_translation": 71
+  },
+  "sha256_zip_kaggle": "967e41e04fc306fe604e2a693f488995a8b41e5047418f8a5c8e4abd6deca784"
+}

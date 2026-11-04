@@ -1,0 +1,30 @@
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar DuckDB y pytest
+        run: pip install -r requirements.txt
+
+      - name: Correr las consultas SQL
+        run: python scripts/correr_sql.py
+
+      - name: Revisar que salidas/ esté al día
+        run: git diff --exit-code -- 'salidas/*.csv'
+
+      - name: Pruebas
+        run: python -m pytest -v

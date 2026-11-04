@@ -1,0 +1,267 @@
+/// Un pedido por fila, con sus tiempos, su nota y su valor. Limpieza en Power Query.
+table Pedidos
+	lineageTag: 8910a910-cc83-5028-aea9-b02401f66c00
+
+	column pedido_id
+		dataType: string
+		isHidden
+		lineageTag: 8354e9b5-dab7-5437-bde3-07ddff30620c
+		summarizeBy: none
+		sourceColumn: pedido_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column cliente_id
+		dataType: string
+		isHidden
+		lineageTag: 5f050d75-cc89-5d9f-8da6-caa38ddd0be2
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_cliente
+		dataType: string
+		lineageTag: 40fc2512-fd43-5d5f-a772-75ec422b4b0e
+		summarizeBy: none
+		sourceColumn: estado_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_pedido
+		dataType: string
+		lineageTag: 62a9debe-1ca3-502e-9b64-6610ffb943ae
+		summarizeBy: none
+		sourceColumn: estado_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_compra
+		dataType: dateTime
+		formatString: dd/mm/yyyy hh:nn
+		lineageTag: 44880629-d4c1-5d47-9fc6-b93a04e5d36a
+		summarizeBy: none
+		sourceColumn: fecha_compra
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_compra_dia
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		isHidden
+		lineageTag: 033c2bb9-373b-51f5-aa21-58757fbbfc1c
+		summarizeBy: none
+		sourceColumn: fecha_compra_dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column entregado
+		dataType: boolean
+		lineageTag: e22f2694-8de1-5aff-81fa-7d4a8aea1f93
+		summarizeBy: none
+		sourceColumn: entregado
+
+		annotation SummarizationSetBy = Automatic
+
+	column tarde
+		dataType: boolean
+		lineageTag: 78caecf8-0d2e-53d7-9ff3-fa2a618b1844
+		summarizeBy: none
+		sourceColumn: tarde
+
+		annotation SummarizationSetBy = Automatic
+
+	column resultado
+		dataType: string
+		lineageTag: 570144b2-a506-50b4-926d-2dad413dc793
+		summarizeBy: none
+		sourceColumn: resultado
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_entrega
+		dataType: double
+		formatString: 0.0
+		lineageTag: 5f63ddf4-16c3-5d58-af58-4d4d1d44eea2
+		summarizeBy: none
+		sourceColumn: dias_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_prometidos
+		dataType: double
+		formatString: 0.0
+		lineageTag: f41197f8-a80c-5147-ac5d-e4df69693e7a
+		summarizeBy: none
+		sourceColumn: dias_prometidos
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_retraso
+		dataType: int64
+		formatString: 0
+		lineageTag: 88240523-dc42-5373-90ee-507f0060c0b4
+		summarizeBy: none
+		sourceColumn: dias_retraso
+
+		annotation SummarizationSetBy = Automatic
+
+	column tramo_retraso
+		dataType: int64
+		formatString: 0
+		lineageTag: 117bf9c8-88ca-5def-9950-d516af86de15
+		summarizeBy: none
+		sourceColumn: tramo_retraso
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_aprobacion
+		dataType: double
+		formatString: 0.0
+		lineageTag: 7bdb9b8b-bd26-51f8-b298-184233df2c48
+		summarizeBy: none
+		sourceColumn: dias_aprobacion
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_vendedor
+		dataType: double
+		formatString: 0.0
+		lineageTag: 998b3f30-a00f-5832-acbd-99297c492674
+		summarizeBy: none
+		sourceColumn: dias_vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_transportadora
+		dataType: double
+		formatString: 0.0
+		lineageTag: 54974d6b-bca3-5983-8a28-6c03ca2a9167
+		summarizeBy: none
+		sourceColumn: dias_transportadora
+
+		annotation SummarizationSetBy = Automatic
+
+	column nota
+		dataType: int64
+		formatString: 0
+		lineageTag: 33a4e43d-77df-5603-ae2d-e1fe3a3e7100
+		summarizeBy: none
+		sourceColumn: nota
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 533a4bff-7517-5da1-bbc9-3d7ce5735134
+		summarizeBy: none
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+	column flete
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 69522d1a-13d0-5df7-b155-73e4ec4e1b8b
+		summarizeBy: none
+		sourceColumn: flete
+
+		annotation SummarizationSetBy = Automatic
+
+	column vendedores
+		dataType: int64
+		formatString: 0
+		lineageTag: 1abc0816-741a-5239-a7f7-eb6a733ce922
+		summarizeBy: none
+		sourceColumn: vendedores
+
+		annotation SummarizationSetBy = Automatic
+
+	column rango_precio
+		dataType: string
+		lineageTag: 5642804c-4788-5ca1-925e-a439276a5143
+		summarizeBy: none
+		sourceColumn: rango_precio
+		sortByColumn: orden_rango
+
+		annotation SummarizationSetBy = Automatic
+
+	column orden_rango
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a569218f-dfbc-53c6-8198-70a12879a6a4
+		summarizeBy: none
+		sourceColumn: orden_rango
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes_completo
+		dataType: boolean
+		isHidden
+		lineageTag: 86c2a421-6ade-57f2-b7b2-113da728e97d
+		summarizeBy: none
+		sourceColumn: mes_completo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Pedidos = m
+		mode: import
+		source =
+				let
+				    // Pedidos + cliente (customer_id cambia en cada pedido; customer_unique_id es la persona)
+				    Pedidos0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_orders_dataset.parquet")),
+				    Clientes = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_customers_dataset.parquet")),
+				    ConCliente = Table.NestedJoin(Pedidos0, {"customer_id"}, Clientes, {"customer_id"}, "c", JoinKind.LeftOuter),
+				    Cliente = Table.ExpandTableColumn(ConCliente, "c", {"customer_unique_id", "customer_state"}, {"cliente_id", "estado_cliente"}),
+				    Nombres = Table.RenameColumns(Cliente, {
+				        {"order_id", "pedido_id"}, {"order_status", "estado_pedido"},
+				        {"order_purchase_timestamp", "fecha_compra"}, {"order_approved_at", "fecha_aprobacion"},
+				        {"order_delivered_carrier_date", "fecha_transportadora"},
+				        {"order_delivered_customer_date", "fecha_entrega"},
+				        {"order_estimated_delivery_date", "fecha_prometida"}}),
+				    Tipos = Table.TransformColumnTypes(Nombres, {
+				        {"fecha_compra", type datetime}, {"fecha_aprobacion", type datetime},
+				        {"fecha_transportadora", type datetime}, {"fecha_entrega", type datetime},
+				        {"fecha_prometida", type datetime}}),
+				    // Entregado = estado delivered y con fecha de entrega (8 pedidos no la tienen)
+				    Entregado = Table.AddColumn(Tipos, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
+				    DiasEntrega = Table.AddColumn(Entregado, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
+				    DiasPrometidos = Table.AddColumn(DiasEntrega, "dias_prometidos", each if [entregado] then Duration.TotalDays([fecha_prometida] - [fecha_compra]) else null, type number),
+				    // Días de calendario entre lo prometido y lo real: positivo = tarde
+				    DiasRetraso = Table.AddColumn(DiasPrometidos, "dias_retraso", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) else null, Int64.Type),
+				    Tarde = Table.AddColumn(DiasRetraso, "tarde", each [dias_retraso] <> null and [dias_retraso] > 0, type logical),
+				    Resultado = Table.AddColumn(Tarde, "resultado", each if not [entregado] then null else if [tarde] then "Llegó tarde" else "A tiempo", type text),
+				    Tramo = Table.AddColumn(Resultado, "tramo_retraso", each if [dias_retraso] = null then null else List.Max({-10, List.Min({20, [dias_retraso]})}), Int64.Type),
+				    // Etapas: solo con las dos fechas de cada tramo
+				    ConEtapas = Table.AddColumn(Tramo, "con_etapas", each [entregado] and [fecha_aprobacion] <> null and [fecha_transportadora] <> null, type logical),
+				    Aprobar = Table.AddColumn(ConEtapas, "dias_aprobacion", each if [con_etapas] then Duration.TotalDays([fecha_aprobacion] - [fecha_compra]) else null, type number),
+				    Vendedor = Table.AddColumn(Aprobar, "dias_vendedor", each if [con_etapas] then Duration.TotalDays([fecha_transportadora] - [fecha_aprobacion]) else null, type number),
+				    Transporte = Table.AddColumn(Vendedor, "dias_transportadora", each if [con_etapas] then Duration.TotalDays([fecha_entrega] - [fecha_transportadora]) else null, type number),
+				    Dia = Table.AddColumn(Transporte, "fecha_compra_dia", each DateTime.Date([fecha_compra]), type date),
+				    MesCompleto = Table.AddColumn(Dia, "mes_completo", each [fecha_compra_dia] >= #date(2017, 1, 1) and [fecha_compra_dia] < #date(2018, 9, 1), type logical),
+				    // Reseñas: algunos pedidos tienen 2 o 3; me quedo con la más reciente
+				    Resenas0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_order_reviews_dataset.parquet")),
+				    ResenasOrden = Table.Buffer(Table.Sort(Resenas0, {{"order_id", Order.Ascending}, {"review_answer_timestamp", Order.Descending}, {"review_creation_date", Order.Descending}, {"review_id", Order.Ascending}})),
+				    ResenaUnica = Table.Distinct(ResenasOrden, {"order_id"}),
+				    ConResena = Table.NestedJoin(MesCompleto, {"pedido_id"}, ResenaUnica, {"order_id"}, "r", JoinKind.LeftOuter),
+				    Nota = Table.ExpandTableColumn(ConResena, "r", {"review_score"}, {"nota"}),
+				    // Precio y flete del pedido (suma de sus productos)
+				    Items0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_order_items_dataset.parquet")),
+				    PorPedido = Table.Group(Items0, {"order_id"}, {
+				        {"precio", each List.Sum([price]), type number},
+				        {"flete", each List.Sum([freight_value]), type number},
+				        {"vendedores", each List.Count(List.Distinct([seller_id])), Int64.Type}}),
+				    ConValor = Table.NestedJoin(Nota, {"pedido_id"}, PorPedido, {"order_id"}, "v", JoinKind.LeftOuter),
+				    Valor = Table.ExpandTableColumn(ConValor, "v", {"precio", "flete", "vendedores"}),
+				    Rango = Table.AddColumn(Valor, "orden_rango", each if [precio] = null then null else if [precio] < 50 then 1 else if [precio] < 100 then 2 else if [precio] < 200 then 3 else if [precio] < 500 then 4 else 5, Int64.Type),
+				    RangoTexto = Table.AddColumn(Rango, "rango_precio", each {null, "Menos de R$50", "R$50 a R$99", "R$100 a R$199", "R$200 a R$499", "R$500 o más"}{if [orden_rango] = null then 0 else [orden_rango]}, type text),
+				    Final = Table.SelectColumns(RangoTexto, {"pedido_id", "cliente_id", "estado_cliente", "estado_pedido", "fecha_compra", "fecha_compra_dia",
+				        "entregado", "tarde", "resultado", "dias_entrega", "dias_prometidos", "dias_retraso", "tramo_retraso",
+				        "dias_aprobacion", "dias_vendedor", "dias_transportadora", "nota", "precio", "flete", "vendedores",
+				        "rango_precio", "orden_rango", "mes_completo"}),
+				    TiposFinales = Table.TransformColumnTypes(Final, {{"nota", Int64.Type}, {"vendedores", Int64.Type}})
+				in
+				    TiposFinales
+

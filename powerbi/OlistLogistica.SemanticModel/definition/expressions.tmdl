@@ -1,0 +1,4 @@
+expression CarpetaRepo = "C:\Trabajo\olist-logistica-sql\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: f710699a-b1d6-5f60-b181-5a5e6a6ea982
+
+	annotation PBI_ResultType = Text

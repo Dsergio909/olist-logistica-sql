@@ -1,0 +1,86 @@
+/// Puntaje RFM por cliente, calculado en sql/07_rfm.sql.
+table RFM
+	lineageTag: 0733884c-47b5-545f-9508-76857bcc377e
+
+	column cliente_id
+		dataType: string
+		isHidden
+		lineageTag: 5d48ec6a-0880-553f-9fc7-2dd02d2e5d7b
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column recencia_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 8af4f66a-2f2b-59ba-8896-6138eabec39b
+		summarizeBy: none
+		sourceColumn: recencia_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column frecuencia
+		dataType: int64
+		formatString: 0
+		lineageTag: 01acba65-f6ee-5cd1-9d9f-5326aa45fb6a
+		summarizeBy: none
+		sourceColumn: frecuencia
+
+		annotation SummarizationSetBy = Automatic
+
+	column monto
+		dataType: double
+		formatString: #,0.00
+		lineageTag: fe47df63-ee72-553e-adf3-0251f1d471a6
+		summarizeBy: none
+		sourceColumn: monto
+
+		annotation SummarizationSetBy = Automatic
+
+	column r
+		dataType: int64
+		formatString: 0
+		lineageTag: 6893e917-284c-5ccc-b4ce-b8d1dd1ae931
+		summarizeBy: none
+		sourceColumn: r
+
+		annotation SummarizationSetBy = Automatic
+
+	column f
+		dataType: int64
+		formatString: 0
+		lineageTag: eb7a0553-5e7e-5c81-8061-ea745e226107
+		summarizeBy: none
+		sourceColumn: f
+
+		annotation SummarizationSetBy = Automatic
+
+	column m
+		dataType: int64
+		formatString: 0
+		lineageTag: 3bab9ff4-d53a-5abd-a58d-d1b5f56b9e97
+		summarizeBy: none
+		sourceColumn: m
+
+		annotation SummarizationSetBy = Automatic
+
+	column segmento
+		dataType: string
+		lineageTag: e5fcaa76-9a52-5bc2-8751-ef34c68bd6b4
+		summarizeBy: none
+		sourceColumn: segmento
+
+		annotation SummarizationSetBy = Automatic
+
+	partition RFM = m
+		mode: import
+		source =
+				let
+				    // Sale del SQL (sql/07_rfm.sql): el mismo cálculo, sin repetirlo en Power Query
+				    Origen = Parquet.Document(File.Contents(CarpetaRepo & "salidas\rfm_clientes.parquet")),
+				    Tipos = Table.TransformColumnTypes(Origen, {{"recencia_dias", Int64.Type}, {"frecuencia", Int64.Type}, {"monto", type number},
+				        {"r", Int64.Type}, {"f", Int64.Type}, {"m", Int64.Type}, {"segmento", type text}})
+				in
+				    Tipos
+

@@ -1,0 +1,174 @@
+/// Lo que despachó cada vendedor en cada pedido.
+table PedidoVendedor
+	lineageTag: ef4c7326-f2dd-5054-a69c-0cc143baee68
+
+	column pedido_id
+		dataType: string
+		isHidden
+		lineageTag: ad28a402-a1fb-582d-8e34-7d80ed89aa97
+		summarizeBy: none
+		sourceColumn: pedido_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column vendedor_id
+		dataType: string
+		isHidden
+		lineageTag: 30d57c67-d1a6-528c-bfdf-f7e9c0ea618d
+		summarizeBy: none
+		sourceColumn: vendedor_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ruta
+		dataType: string
+		lineageTag: 152de172-9f36-58dd-b772-4d863c94830e
+		summarizeBy: none
+		sourceColumn: ruta
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_vendedor
+		dataType: string
+		lineageTag: 0103266c-a7c5-5cac-8c85-31255bd39264
+		summarizeBy: none
+		sourceColumn: estado_vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_cliente
+		dataType: string
+		lineageTag: e732f832-74ef-5508-bff0-359a18494955
+		summarizeBy: none
+		sourceColumn: estado_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 9af51ec4-39a3-5771-8766-3fe2d660fcf2
+		summarizeBy: none
+		sourceColumn: precio
+
+		annotation SummarizationSetBy = Automatic
+
+	column flete
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 403fd690-f7fd-5ec5-8db8-3514a4db2f36
+		summarizeBy: none
+		sourceColumn: flete
+
+		annotation SummarizationSetBy = Automatic
+
+	column entregado
+		dataType: boolean
+		lineageTag: 47dd2beb-d13b-5543-9bf6-cfba08d484ac
+		summarizeBy: none
+		sourceColumn: entregado
+
+		annotation SummarizationSetBy = Automatic
+
+	column tarde
+		dataType: boolean
+		lineageTag: bd7aa9cf-ce4c-52c6-93eb-6a56cabf4518
+		summarizeBy: none
+		sourceColumn: tarde
+
+		annotation SummarizationSetBy = Automatic
+
+	column despacho
+		dataType: string
+		lineageTag: 19d01bfa-00ea-51fa-a2d7-6a39e4648343
+		summarizeBy: none
+		sourceColumn: despacho
+
+		annotation SummarizationSetBy = Automatic
+
+	column vendedores_del_pedido
+		dataType: int64
+		formatString: 0
+		lineageTag: 7dc32301-7cfa-5b77-bab0-426e81116e55
+		summarizeBy: none
+		sourceColumn: vendedores_del_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column nota
+		dataType: int64
+		formatString: 0
+		lineageTag: 63c519cd-2282-5c0e-9e41-044cc0ddc3fa
+		summarizeBy: none
+		sourceColumn: nota
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_entrega
+		dataType: double
+		formatString: 0.0
+		lineageTag: 750586c5-3e9d-56f5-a0f3-6b3c3200670c
+		summarizeBy: none
+		sourceColumn: dias_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_compra_dia
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		isHidden
+		lineageTag: ef16e4bd-339c-562a-97a5-ab5db837e238
+		summarizeBy: none
+		sourceColumn: fecha_compra_dia
+
+		annotation SummarizationSetBy = Automatic
+
+	partition PedidoVendedor = m
+		mode: import
+		source =
+				let
+				    // Unidad: lo que despachó un vendedor en un pedido
+				    Items0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_order_items_dataset.parquet")),
+				    Tipos0 = Table.TransformColumnTypes(Items0, {{"shipping_limit_date", type datetime}}),
+				    Grupo = Table.Group(Tipos0, {"order_id", "seller_id"}, {
+				        {"precio", each List.Sum([price]), type number},
+				        {"flete", each List.Sum([freight_value]), type number},
+				        {"fecha_limite", each List.Max([shipping_limit_date]), type datetime}}),
+				    Nombres = Table.RenameColumns(Grupo, {{"order_id", "pedido_id"}, {"seller_id", "vendedor_id"}}),
+				    // Datos del pedido (se recalculan aquí para no depender de otra consulta)
+				    Pedidos0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_orders_dataset.parquet")),
+				    Clientes = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_customers_dataset.parquet")),
+				    ConCliente = Table.NestedJoin(Pedidos0, {"customer_id"}, Clientes, {"customer_id"}, "c", JoinKind.LeftOuter),
+				    Cliente = Table.ExpandTableColumn(ConCliente, "c", {"customer_state"}, {"estado_cliente"}),
+				    TiposP = Table.TransformColumnTypes(Cliente, {{"order_purchase_timestamp", type datetime}, {"order_delivered_carrier_date", type datetime},
+				        {"order_delivered_customer_date", type datetime}, {"order_estimated_delivery_date", type datetime}}),
+				    ConPedido = Table.NestedJoin(Nombres, {"pedido_id"}, TiposP, {"order_id"}, "p", JoinKind.Inner),
+				    Pedido = Table.ExpandTableColumn(ConPedido, "p", {"order_status", "order_purchase_timestamp", "order_delivered_carrier_date",
+				        "order_delivered_customer_date", "order_estimated_delivery_date", "estado_cliente"},
+				        {"estado_pedido", "fecha_compra", "fecha_transportadora", "fecha_entrega", "fecha_prometida", "estado_cliente"}),
+				    Entregado = Table.AddColumn(Pedido, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
+				    Tarde = Table.AddColumn(Entregado, "tarde", each [entregado] and Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) > 0, type logical),
+				    DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.TotalDays([fecha_entrega] - [fecha_compra]) else null, type number),
+				    Despacho = Table.AddColumn(DiasEntrega, "despacho", each if [fecha_transportadora] = null then "Sin dato" else if [fecha_transportadora] > [fecha_limite] then "Tarde" else "A tiempo", type text),
+				    // Cuántos vendedores tiene el pedido (para medir el despacho solo en pedidos de uno)
+				    Cuenta = Table.Group(Despacho, {"pedido_id"}, {{"vendedores_del_pedido", each Table.RowCount(_), Int64.Type}}),
+				    ConCuenta = Table.NestedJoin(Despacho, {"pedido_id"}, Cuenta, {"pedido_id"}, "n", JoinKind.LeftOuter),
+				    NVend = Table.ExpandTableColumn(ConCuenta, "n", {"vendedores_del_pedido"}),
+				    // Ruta: estado del vendedor -> estado del cliente
+				    Vendedores0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_sellers_dataset.parquet")),
+				    ConVendedor = Table.NestedJoin(NVend, {"vendedor_id"}, Vendedores0, {"seller_id"}, "s", JoinKind.LeftOuter),
+				    EstadoV = Table.ExpandTableColumn(ConVendedor, "s", {"seller_state"}, {"estado_vendedor"}),
+				    Ruta = Table.AddColumn(EstadoV, "ruta", each [estado_vendedor] & " → " & [estado_cliente], type text),
+				    // Nota del pedido (la reseña más reciente)
+				    Resenas0 = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_order_reviews_dataset.parquet")),
+				    ResenasOrden = Table.Buffer(Table.Sort(Resenas0, {{"order_id", Order.Ascending}, {"review_answer_timestamp", Order.Descending}, {"review_creation_date", Order.Descending}, {"review_id", Order.Ascending}})),
+				    ResenaUnica = Table.Distinct(ResenasOrden, {"order_id"}),
+				    ConResena = Table.NestedJoin(Ruta, {"pedido_id"}, ResenaUnica, {"order_id"}, "r", JoinKind.LeftOuter),
+				    Nota = Table.ExpandTableColumn(ConResena, "r", {"review_score"}, {"nota"}),
+				    Dia = Table.AddColumn(Nota, "fecha_compra_dia", each DateTime.Date([fecha_compra]), type date),
+				    Final = Table.SelectColumns(Dia, {"pedido_id", "vendedor_id", "ruta", "estado_vendedor", "estado_cliente", "precio", "flete",
+				        "entregado", "tarde", "despacho", "vendedores_del_pedido", "nota", "dias_entrega", "fecha_compra_dia"}),
+				    TiposFinales = Table.TransformColumnTypes(Final, {{"nota", Int64.Type}, {"vendedores_del_pedido", Int64.Type}})
+				in
+				    TiposFinales
+

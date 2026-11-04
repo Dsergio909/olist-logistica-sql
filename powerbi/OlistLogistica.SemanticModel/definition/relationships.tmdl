@@ -1,0 +1,15 @@
+relationship 3b01d9ad-6f44-579f-b165-396c54912401
+	fromColumn: Pedidos.estado_cliente
+	toColumn: Estados.codigo
+
+relationship 5accbf30-c627-526b-895a-e1203e005cac
+	fromColumn: Pedidos.fecha_compra_dia
+	toColumn: Calendario.Fecha
+
+relationship 772a14d1-8eee-5fa1-813f-a7f207d966ec
+	fromColumn: PedidoVendedor.vendedor_id
+	toColumn: Vendedores.vendedor_id
+
+relationship 295e730d-3f81-5c48-82e7-fd8f08f04b4e
+	fromColumn: PedidoVendedor.fecha_compra_dia
+	toColumn: Calendario.Fecha

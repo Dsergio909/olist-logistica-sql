@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "v0198de457e",
+  "position": {
+    "x": 24,
+    "y": 694,
+    "z": 1000,
+    "width": 1232,
+    "height": 22,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Fuente: Olist, Brazilian E-Commerce Public Dataset (Kaggle), licencia CC BY-NC-SA 4.0. Pedidos de sep-2016 a oct-2018. Tarde = llegó después del día prometido.",
+                    "textStyle": {
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#57606a"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

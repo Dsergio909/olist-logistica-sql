@@ -1,0 +1,90 @@
+/// Los 27 estados de Brasil con su región y el punto del mapa.
+table Estados
+	lineageTag: 4101ea74-787c-5acd-8d8f-363861e9610f
+
+	column codigo
+		dataType: string
+		lineageTag: c21d5e8c-716a-551a-8c16-5dbb713869ae
+		summarizeBy: none
+		sourceColumn: codigo
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre
+		dataType: string
+		lineageTag: 6e7694b9-ab5f-55c3-ad6e-95ab1da47269
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: 32b1c105-8244-5ba8-9004-cf0e5ebecdaa
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column lat
+		dataType: double
+		formatString: 0.0000
+		isHidden
+		lineageTag: 356c91dd-090b-542a-ba9b-c588b945e065
+		summarizeBy: none
+		sourceColumn: lat
+
+		annotation SummarizationSetBy = Automatic
+
+	column lng
+		dataType: double
+		formatString: 0.0000
+		isHidden
+		lineageTag: 72cb4e9e-4fc1-5282-a198-72707d7b75d9
+		summarizeBy: none
+		sourceColumn: lng
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Estados = m
+		mode: import
+		source =
+				let
+				    Lista = #table(type table [codigo = text, nombre = text, region = text], {
+				        {"AC", "Acre", "Norte"},
+				        {"AL", "Alagoas", "Nordeste"},
+				        {"AM", "Amazonas", "Norte"},
+				        {"AP", "Amapá", "Norte"},
+				        {"BA", "Bahia", "Nordeste"},
+				        {"CE", "Ceará", "Nordeste"},
+				        {"DF", "Distrito Federal", "Centro-Oeste"},
+				        {"ES", "Espírito Santo", "Sudeste"},
+				        {"GO", "Goiás", "Centro-Oeste"},
+				        {"MA", "Maranhão", "Nordeste"},
+				        {"MG", "Minas Gerais", "Sudeste"},
+				        {"MS", "Mato Grosso do Sul", "Centro-Oeste"},
+				        {"MT", "Mato Grosso", "Centro-Oeste"},
+				        {"PA", "Pará", "Norte"},
+				        {"PB", "Paraíba", "Nordeste"},
+				        {"PE", "Pernambuco", "Nordeste"},
+				        {"PI", "Piauí", "Nordeste"},
+				        {"PR", "Paraná", "Sul"},
+				        {"RJ", "Rio de Janeiro", "Sudeste"},
+				        {"RN", "Rio Grande do Norte", "Nordeste"},
+				        {"RO", "Rondônia", "Norte"},
+				        {"RR", "Roraima", "Norte"},
+				        {"RS", "Rio Grande do Sul", "Sul"},
+				        {"SC", "Santa Catarina", "Sul"},
+				        {"SE", "Sergipe", "Nordeste"},
+				        {"SP", "São Paulo", "Sudeste"},
+				        {"TO", "Tocantins", "Norte"}}),
+				    // Punto del mapa: mediana de las coordenadas de los códigos postales del estado
+				    Geo = Parquet.Document(File.Contents(CarpetaRepo & "datos\olist_geolocation_dataset.parquet")),
+				    Centro = Table.Group(Geo, {"geolocation_state"}, {
+				        {"lat", each List.Median([geolocation_lat]), type number},
+				        {"lng", each List.Median([geolocation_lng]), type number}}),
+				    ConCentro = Table.NestedJoin(Lista, {"codigo"}, Centro, {"geolocation_state"}, "g", JoinKind.LeftOuter),
+				    Final = Table.ExpandTableColumn(ConCentro, "g", {"lat", "lng"})
+				in
+				    Final
+

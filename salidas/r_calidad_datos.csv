@@ -1,0 +1,10 @@
+orden,chequeo,cantidad,que_hago
+1,Pedidos en total,99441,Base de todo el análisis
+2,Pedidos entregados con fecha de entrega,96470,Son los que uso para medir tiempos
+3,Estado entregado pero sin fecha de entrega,8,Se excluyen de los tiempos
+4,Entregado al cliente antes que a la transportadora,23,Se dejan: son pocos y no cambian los promedios
+5,Entregado a la transportadora antes de la compra,166,Se dejan: error de registro de la fuente
+6,Pedidos sin ningún producto,775,Casi todos cancelados o no disponibles
+7,Pedidos con más de una reseña,547,Me quedo con la más reciente
+8,Pedidos con pago distinto a precio + flete (más de R$1),249,Intereses de cuotas y vales: no afecta la logística
+9,Productos sin categoría,610,Quedan como sin_categoria

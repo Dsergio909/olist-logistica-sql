@@ -1,0 +1,20 @@
+model Model
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-CO
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["CarpetaRepo", "Pedidos", "PedidoVendedor", "Vendedores", "Estados", "Calendario", "RFM", "RecompraSQL", "Medidas"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table Pedidos
+ref table PedidoVendedor
+ref table Vendedores
+ref table Estados
+ref table Calendario
+ref table RFM
+ref table RecompraSQL
+ref table Medidas

@@ -1,0 +1,68 @@
+{
+  "name": "Olist sobrio",
+  "dataColors": [
+    "#1d4a35",
+    "#8c959f",
+    "#c9d1d9",
+    "#4f6f5f",
+    "#a5b5ac",
+    "#b42318",
+    "#6e7781",
+    "#2f5d47"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1f2328",
+  "tableAccent": "#1d4a35",
+  "good": "#1d4a35",
+  "bad": "#b42318",
+  "neutral": "#8c959f",
+  "textClasses": {
+    "callout": {
+      "fontSize": 26,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1f2328"
+    },
+    "title": {
+      "fontSize": 11,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1f2328"
+    },
+    "header": {
+      "fontSize": 10,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1f2328"
+    },
+    "label": {
+      "fontSize": 9,
+      "fontFace": "Segoe UI",
+      "color": "#57606a"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": false
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ],
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}
