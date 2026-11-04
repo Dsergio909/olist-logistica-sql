@@ -133,7 +133,7 @@ let
     Entregado = Table.AddColumn(Pedido, "entregado", each [estado_pedido] = "delivered" and [fecha_entrega] <> null, type logical),
     Tarde = Table.AddColumn(Entregado, "tarde", each [entregado] and Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_prometida])) > 0, type logical),
     DiasEntrega = Table.AddColumn(Tarde, "dias_entrega", each if [entregado] then Duration.Days(DateTime.Date([fecha_entrega]) - DateTime.Date([fecha_compra])) else null, Int64.Type),
-    Despacho = Table.AddColumn(DiasEntrega, "despacho", each if [fecha_transportadora] = null then "Sin dato" else if [fecha_transportadora] > [fecha_limite] then "Tarde" else "A tiempo", type text),
+    Despacho = Table.AddColumn(DiasEntrega, "despacho", each if [fecha_transportadora] = null then "Sin dato" else if DateTime.Date([fecha_transportadora]) > DateTime.Date([fecha_limite]) then "Tarde" else "A tiempo", type text),
     // Cuántos vendedores tiene el pedido (para medir el despacho solo en pedidos de uno)
     Cuenta = Table.Group(Despacho, {{"pedido_id"}}, {{{{"vendedores_del_pedido", each Table.RowCount(_), Int64.Type}}}}),
     ConCuenta = Table.NestedJoin(Despacho, {{"pedido_id"}}, Cuenta, {{"pedido_id"}}, "n", JoinKind.LeftOuter),
@@ -332,19 +332,27 @@ MEDIDAS = [
     ("Logística", "Latitud", "AVERAGE ( Estados[lat] )", "0.00", "Para el mapa de burbujas (eje Y)."),
     ("Logística", "Longitud", "AVERAGE ( Estados[lng] )", "0.00", "Para el mapa de burbujas (eje X)."),
     # Vendedores
-    ("Vendedores", "Vendedores con ventas", "DISTINCTCOUNT ( PedidoVendedor[vendedor_id] )", "#,0",
+    ("Vendedores", "Vendedores con entregas",
+     "CALCULATE ( DISTINCTCOUNT ( PedidoVendedor[vendedor_id] ), PedidoVendedor[entregado] = TRUE () )", "#,0",
      "Vendedores con al menos un pedido."),
     ("Vendedores", "Pedidos de vendedor entregados",
      "CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[entregado] = TRUE () )", "#,0",
      "Unidad: lo que despachó un vendedor en un pedido."),
     ("Vendedores", "Pedidos de vendedor tarde",
      "CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[tarde] = TRUE () )", "#,0", ""),
+    ("Vendedores", "Tarde (pedidos de un vendedor)",
+     "CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1 )", "#,0",
+     "Para las rutas: en un pedido de dos vendedores no se sabe cuál causó el retraso (igual que en sql/08)."),
     ("Vendedores", "% tarde (vendedor)", "DIVIDE ( [Pedidos de vendedor tarde], [Pedidos de vendedor entregados] )",
      "0.0%", ""),
     ("Vendedores", "% despacho tarde",
-     "DIVIDE (\n    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[despacho] = \"Tarde\" ),\n"
-     "    [Pedidos de vendedor entregados]\n)", "0.0%",
-     "El vendedor entregó a la transportadora después de su fecha límite."),
+     "VAR UnVendedorConDato =\n"
+     "    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] <> \"Sin dato\" )\n"
+     "RETURN\n"
+     "    DIVIDE (\n"
+     "        CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] = \"Tarde\" ),\n"
+     "        UnVendedorConDato\n    )", "0.0%",
+     "El vendedor entregó a la transportadora un día después de su fecha límite. Solo pedidos de un vendedor: la fecha de la transportadora es una por pedido."),
     ("Vendedores", "% de los retrasos con despacho a tiempo",
      "VAR UnVendedor = PedidoVendedor[vendedores_del_pedido] = 1\n"
      "VAR TardeConDato =\n    CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] <> \"Sin dato\" )\n"
@@ -358,11 +366,12 @@ MEDIDAS = [
     ("Clientes", "% clientes", "DIVIDE ( [Clientes], CALCULATE ( [Clientes], ALL ( RFM ) ) )", "0.0%", ""),
     ("Clientes", "Monto", "SUM ( RFM[monto] )", "#,0", "Total pagado, en reales."),
     ("Clientes", "% del dinero", "DIVIDE ( [Monto], CALCULATE ( [Monto], ALL ( RFM ) ) )", "0.0%", ""),
-    ("Clientes", "% que vuelve a comprar", "DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )", "0.0%",
+    ("Clientes", "% que vuelve a comprar", "DIVIDE ( CALCULATE ( [Clientes], KEEPFILTERS ( RFM[frecuencia] > 1 ) ), [Clientes] )", "0.0%",
      "Clientes que compraron en más de un día."),
     ("Clientes", "Gasto por compra (R$)", "DIVIDE ( [Monto], SUM ( RFM[frecuencia] ) )", "#,0.00",
      "Total pagado sobre días de compra (dos pedidos el mismo día son una compra)."),
-    ("Clientes", "Flete % del precio", "DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )", "0.0%",
+    ("Clientes", "Flete % del precio",
+     "CALCULATE ( DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) ), Pedidos[entregado] = TRUE () )", "0.0%",
      "Suma de fletes sobre suma de precios."),
     ("Clientes", "% volvió a comprar", "DIVIDE ( SUM ( RecompraSQL[volvieron] ), SUM ( RecompraSQL[clientes] ) )", "0.00%",
      "Del resultado SQL: clientes que volvieron otro día, dentro de los 180 días siguientes a su primera compra."),
@@ -612,7 +621,7 @@ def paginas() -> list[Pagina]:
                objetos={"dataPoint": [{"properties": {"fill": color(ACENTO)}}],
                         "labels": [{"properties": {"show": lit(False)}}],
                         "categoryAxis": [{"properties": {"axisType": lit("Scalar")}}]})
-    p1.grafico("barChart", 840, 502, 416, 294, "¿En qué etapa se va el tiempo? (días promedio)",
+    p1.grafico("barChart", 840, 502, 416, 294, "¿En qué etapa se va el tiempo? (días con horas, promedio)",
                {"Category": [C("Pedidos", "resultado")],
                 "Y": [(Me("Aprobar el pago (días)"), "Aprobar pago"), (Me("Vendedor despacha (días)"), "Vendedor despacha"),
                       (Me("Transportadora (días)"), "Transportadora")]},
@@ -625,7 +634,7 @@ def paginas() -> list[Pagina]:
 
     p2 = Pagina("vendedores", "¿Qué vendedores cumplen?",
                 "Cada fila es lo que despachó un vendedor en un pedido. Despacho tarde = entregó a la transportadora después de su fecha límite.")
-    p2.tarjetas(["Vendedores con ventas", "% despacho tarde", "% tarde (vendedor)", "% de los retrasos con despacho a tiempo"])
+    p2.tarjetas(["Vendedores con entregas", "% despacho tarde", "% tarde (vendedor)", "% de los retrasos con despacho a tiempo"])
     p2.grafico("clusteredColumnChart", 24, 192, 360, 494, "% tarde según el despacho del vendedor",
                {"Category": [C("PedidoVendedor", "despacho")], "Y": [Me("% tarde (vendedor)")]},
                objetos=EJE_VALOR_OCULTO, filtros=[filtro_excluir("PedidoVendedor", "despacho", "Sin dato")])
@@ -635,9 +644,9 @@ def paginas() -> list[Pagina]:
                            (Me("% tarde (vendedor)"), "% tarde"), (Me("% despacho tarde"), "% despacho tarde"),
                            (Me("Nota (vendedor)"), "Nota")]},
                orden=(Me("Pedidos de vendedor tarde"), "Descending"))
-    p2.grafico("clusteredBarChart", 896, 192, 360, 494, "Rutas con más entregas tarde (vendedor → cliente)",
-               {"Category": [C("PedidoVendedor", "ruta")], "Y": [Me("Pedidos de vendedor tarde")]},
-               orden=(Me("Pedidos de vendedor tarde"), "Descending"), objetos=EJE_VALOR_OCULTO)
+    p2.grafico("clusteredBarChart", 896, 192, 360, 494, "Rutas con más entregas tarde (pedidos de un vendedor)",
+               {"Category": [C("PedidoVendedor", "ruta")], "Y": [Me("Tarde (pedidos de un vendedor)")]},
+               orden=(Me("Tarde (pedidos de un vendedor)"), "Descending"), objetos=EJE_VALOR_OCULTO)
 
     p3 = Pagina("clientes", "¿Los clientes vuelven? ¿Cuánto pesa el flete?",
                 "Segmentos RFM (recencia, frecuencia y monto) calculados en SQL. Flete como % del precio de los productos del pedido.")

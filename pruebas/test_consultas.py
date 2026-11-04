@@ -58,8 +58,9 @@ def test_etapas_suman_el_total(uno):
                   from r_etapas""") <= 0.2
 
 
-def test_flete_por_rango_cubre_los_pedidos_con_productos(uno):
-    assert uno("select sum(pedidos) from r_flete_por_rango_precio") == uno("select count(*) from pedido_valor")
+def test_flete_por_rango_cubre_los_pedidos_entregados(uno):
+    assert uno("select sum(pedidos) from r_flete_por_rango_precio") == \
+        uno("select count(*) from pedido_valor join pedidos using (pedido_id) where entregado")
     assert uno("select round(sum(pct_pedidos)) from r_flete_por_rango_precio") == 100
 
 

@@ -146,3 +146,36 @@ Cifras del README que cambiaron: promesa 23,7 → 24,4 días; entrega 12,6 → 1
 | 8 | NTILE(5) del RFM parte empates por `cliente_id` | Máximo 15 clientes empatados en un corte, de 94.990 | **Descartado:** sin efecto en ninguna cifra |
 
 Cifras del README que cambiaron por la parte 2: recompra 2,02/1,61 → 1,85/1,37; z 1,71 → 1,82. Segundo camino (Python puro): 28 de 28 iguales. Pruebas: 58 de 58.
+
+### Auditoría, vuelta B (sobre la versión ya corregida)
+
+Antigravity revisó de nuevo las 3 partes, ya con el código corregido. La parte 3 (Power Query, DAX y conclusiones del README) se revisó por primera vez: en la vuelta A la respuesta se perdió porque la consola de Windows no imprimía un carácter («−»). Desde aquí todas las llamadas van en UTF-8.
+
+Las 3 partes encontraron, cada una por su lado, el error más importante de esta vuelta: el «99,7 %» usaba `review_creation_date`, que es cuándo Olist **envió** la encuesta, no cuándo el cliente la **respondió** (`review_answer_timestamp`).
+
+| # | Hallazgo de Antigravity | Comprobación con los datos | Veredicto |
+|---|---|---|---|
+| 1 | Reseña: fecha de envío de la encuesta en vez de la respuesta del cliente | Con la respuesta: 96,2 % de los clientes con 7+ días de retraso respondió antes de recibir (no 99,7 %) | **Cierto, alto.** Corregido. Y salió un dato nuevo: con 1 a 6 días de retraso, quien responde antes de recibir pone 1,65 y quien espera pone 3,73 |
+| 2 | «Lo que pesa es pasarse, no cuánto» contradice los 0,38 puntos por día de la primera semana | Cierto: en la primera semana cada día sí cuenta | **Cierto.** Reescrito: «en la primera semana cada día cuenta; después, la nota ya está puesta» |
+| 3 | «El retraso sigue al volumen» sale de ordenar por cantidad de retrasos, y eso siempre pone arriba a los grandes; ese 5 % tiene 8,1 % de tasa contra 5,7 % del resto | Por tamaño del vendedor, la tasa es casi igual: 6,9 %, 6,8 %, 6,4 %, 7,3 % y 7,2 %. El 10 % con peor tasa (30+ pedidos) llega tarde el 16,9 % de las veces y tiene el 12,7 % de los retrasos | **Cierto en el método.** Ahora se mide por tasa (`r_retraso_por_tamano` y `r_peores_vendedores`). La conclusión se mantiene, pero bien medida |
+| 4 | El desempate de la concentración ponía primero al vendedor con más pedidos | Cierto | **Cierto, bajo.** A igual número de retrasos, primero el de peor tasa |
+| 5 | Despacho tarde comparaba horas: entregar el último día por la tarde contaba como tarde | Por hora: 8.659 despachos tarde; por día: 5.538 | **Cierto, alto.** En días de calendario, como «tarde». El vendedor despachó a tiempo en el 77,6 % de los pedidos tarde (antes 72,2 %), en el SQL y en Power Query |
+| 6 | La medida `% despacho tarde` no filtraba pedidos de un vendedor ni «Sin dato» | Cierto | **Cierto.** Corregido |
+| 7 | La tarjeta «Vendedores con ventas» contaba vendedores sin ninguna entrega | 3.095 contra 2.970 | **Cierto.** Ahora «Vendedores con entregas» |
+| 8 | `% que vuelve a comprar` sin `KEEPFILTERS` da mal al cruzarla por frecuencia | Cierto (no afecta la tarjeta) | **Cierto, bajo.** Con `KEEPFILTERS` |
+| 9 | Flete con pedidos no entregados | 16,6 % y 48,4 % iguales; 10,2 % → 10,1 % | **Cierto, bajo.** Solo entregados, como el resto, en el SQL y en DAX |
+| 10 | Las pendientes con tope en ±20 apilan la cola en el borde (el punto de más peso en la regresión) | Filtrando: -0,013, -0,376 y -0,017 | **Cierto, bajo.** Se filtra en vez de poner tope |
+| 11 | Cohortes sin las celdas con 0 clientes de vuelta | Cierto | **Cierto.** Grilla completa de los meses observados |
+| 12 | El comentario atribuía todo el cambio de recompra a los 281 pedidos del mismo segundo | 281 en el mismo segundo y 573 el mismo día, otra hora | **Cierto, de claridad.** Comentario corregido. Decisión: el mismo día cuenta como la misma visita (si no, 2,8 %) |
+| 13 | El segmento «ticket alto que no volvió» exige además más de 6 meses sin comprar, y el README no lo decía | Cierto | **Cierto, de claridad.** README y descripción corregidos |
+| 14 | La prueba debería ser de una cola (z 1,82 alcanzaría) | La hipótesis no se fijó de antemano; la prueba estándar es de dos colas | **Descartado como error.** El README ahora dice «hay una señal, pero no alcanza al 95 %, porque son pocos clientes con entrega tarde» |
+| 15 | Promedio móvil con 1 y 2 meses al inicio | Cierto | **Cierto, bajo.** Vacío hasta tener 3 meses |
+| 16 | 1.350 pedidos con la etapa del vendedor negativa (despachado antes de aprobar el pago) | 1.350 y 23 | **Cierto.** Agregado al chequeo de calidad (se dejan; son error de registro) |
+| 17 | Las etapas (en horas) no suman la tarjeta de días de entrega (en días de calendario) | 12,1 contra 12,5 | **Cierto, de claridad.** El título del gráfico dice «días con horas» |
+| 18 | `sin_categoria` entraba en el ranking de categorías | Cierto | **Cierto, bajo.** Excluida |
+| 19 | El centro de cada estado del mapa no es por código postal | `geo_cp` ya tiene 1 fila por código (19.015 de 19.015) | **Descartado:** falso |
+| 20 | La columna `tiene_comentario` no existe en el Parquet | Existe (40.968 reseñas con comentario) | **Descartado:** falso |
+| 21 | La recencia del RFM se mide hasta el 2018-09-04 por un solo pedido de septiembre | Cierto, pero no cambia ningún segmento | **Descartado:** el corte «día después del último pedido» está documentado |
+| 22 | Empates en NTILE y en el puesto con el % redondeado | Máximo 15 clientes; cosmético | **Descartado** (comentario aclarado) |
+
+Cifras del README que cambiaron en la vuelta B: vendedor a tiempo 72,2 % → 77,6 %; concentración (58,7/49,9) reemplazada por la tasa por tamaño (6,4 % a 7,3 %) y el 10 % peor (16,9 % de tasa, 12,7 % de los retrasos); reseñas antes de recibir 99,7 % → 96,2 %, con las notas 1,65 y 3,73; flete mayor que el producto 10,2 % → 10,1 %. Segundo camino (Python puro): 32 de 32 iguales. Pruebas: 58 de 58.

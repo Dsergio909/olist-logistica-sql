@@ -55,7 +55,7 @@ def main() -> int:
         clave = (r["review_answer_timestamp"], r["review_creation_date"])
         actual = mejor.get(r["order_id"])
         if actual is None or clave > actual[0] or (clave == actual[0] and r["review_id"] < actual[2]):
-            mejor[r["order_id"]] = (clave, int(r["review_score"]), r["review_id"], r["review_creation_date"][:10])
+            mejor[r["order_id"]] = (clave, int(r["review_score"]), r["review_id"], fecha(r["review_answer_timestamp"]))
     nota = {k: v[1] for k, v in mejor.items()}
 
     # Ítems por pedido y por pedido-vendedor
@@ -74,7 +74,7 @@ def main() -> int:
         p = pedidos[pid]
         if p["entregado"] and len(vendedores_pedido[pid]) == 1 and p["transportadora"] and p["retraso"] > 0:
             tarde_un_vendedor += 1
-            tarde_despacho_ok += p["transportadora"] <= fecha(lim)
+            tarde_despacho_ok += p["transportadora"].date() <= fecha(lim).date()
 
     # 15. Pendiente de la nota entre 1 y 6 días tarde (mínimos cuadrados)
     pares = [(p["retraso"], nota[k]) for k, p in pedidos.items() if p["entregado"] and k in nota and 1 <= p["retraso"] <= 6]
@@ -83,7 +83,8 @@ def main() -> int:
     pendiente = sum((x - xm) * (y - ym) for x, y in pares) / sum((x - xm) ** 2 for x, _ in pares)
 
     # 18-20. Flete en pedidos de menos de R$50
-    baratos = [k for k in precio if precio[k] < 50]
+    con_items = [k for k in precio if pedidos[k]["entregado"]]           # solo entregados
+    baratos = [k for k in con_items if precio[k] < 50]
 
     # 21-23. Recompra (sin cancelados ni no disponibles)
     validos = {k: p for k, p in pedidos.items() if p["status"] not in ("canceled", "unavailable")}
@@ -113,12 +114,18 @@ def main() -> int:
         if p["entregado"] and len(vendedores_pedido[pid]) == 1:          # solo pedidos de un vendedor
             por_vendedor[vid][0] += 1
             por_vendedor[vid][1] += p["retraso"] > 0
-    orden = sorted(por_vendedor.items(), key=lambda kv: (-kv[1][1], -kv[1][0], kv[0]))
-    corte = math.ceil(len(orden) * 5 / 100)
-    top_tarde = sum(v[1] for _, v in orden[:corte])
-    top_pedidos = sum(v[0] for _, v in orden[:corte])
-    total_tarde = sum(v[1] for _, v in orden)
-    total_pedidos = sum(v[0] for _, v in orden)
+    total_tarde = sum(v[1] for v in por_vendedor.values())
+    bandas = defaultdict(lambda: [0, 0])
+    for n_ped, n_tarde in por_vendedor.values():
+        b = 1 if n_ped < 10 else 2 if n_ped < 50 else 3 if n_ped < 200 else 4 if n_ped < 1000 else 5
+        bandas[b][0] += n_ped
+        bandas[b][1] += n_tarde
+    tasas_banda = [round(100 * x / n_ped, 1) for n_ped, x in bandas.values()]
+    grandes = sorted(((vid, v) for vid, v in por_vendedor.items() if v[0] >= 30),
+                     key=lambda kv: (-kv[1][1] / kv[1][0], -kv[1][0], kv[0]))
+    peores = grandes[:math.ceil(len(grandes) * 0.10)]
+    peores_ped = sum(v[0] for _, v in peores)
+    peores_tarde = sum(v[1] for _, v in peores)
 
     # 24. Prueba z de dos proporciones (proporción combinada)
     n1, x1 = volvio["a_tiempo"]
@@ -166,8 +173,8 @@ def main() -> int:
         "nota_a_tiempo": round(statistics.fmean(nota[k] for k, p in pedidos.items() if p["entregado"] and k in nota and p["retraso"] <= 0), 2),
         "puntos_por_dia_1_a_6": round(-pendiente, 2),
         "nota_7_dias_o_mas": round(statistics.fmean(nota[k] for k, p in pedidos.items() if p["entregado"] and k in nota and p["retraso"] >= 7), 2),
-        "flete_pct_total": round(100 * sum(flete.values()) / sum(precio.values()), 1),
-        "pct_pedidos_menos_50": round(100 * len(baratos) / len(precio), 1),
+        "flete_pct_total": round(100 * sum(flete[k] for k in con_items) / sum(precio[k] for k in con_items), 1),
+        "pct_pedidos_menos_50": round(100 * len(baratos) / len(con_items), 1),
         "flete_pct_menos_50": round(100 * sum(flete[k] for k in baratos) / sum(precio[k] for k in baratos), 1),
         "pct_flete_mayor_menos_50": round(100 * sum(flete[k] >= precio[k] for k in baratos) / len(baratos), 1),
         "pct_clientes_recompran": round(100 * sum(len({f.date() for f, _ in c}) > 1 for c in por_cliente.values()) / len(por_cliente), 1),
@@ -175,13 +182,19 @@ def main() -> int:
         "recompra_primera_tarde": round(100 * volvio["tarde"][1] / volvio["tarde"][0], 2),
         "dias_transportadora_tarde": round(dias_transporte(True), 1),
         "dias_transportadora_a_tiempo": round(dias_transporte(False), 1),
-        "top5_pct_retrasos": round(100 * top_tarde / total_tarde, 1),
-        "top5_pct_pedidos": round(100 * top_pedidos / total_pedidos, 1),
+        "tamano_pct_tarde_min": min(tasas_banda),
+        "tamano_pct_tarde_max": max(tasas_banda),
+        "peores10_pct_tarde": round(100 * peores_tarde / peores_ped, 1),
+        "peores10_pct_retrasos": round(100 * peores_tarde / total_tarde, 1),
         "z_recompra": round(z, 2),
         "rfm_ticket_alto_pct_clientes": round(100 * len(segmento) / n, 1),
         "rfm_ticket_alto_pct_monto": round(100 * sum(c[3] for c in segmento) / monto_total, 1),
-        "pct_resena_antes_7_mas": round(100 * statistics.fmean(
-            mejor[k][3] < str(p["entrega"].date()) for k, p in pedidos.items() if p["entregado"] and k in mejor and p["retraso"] >= 7), 1),
+        "pct_respondio_antes_7_mas": round(100 * statistics.fmean(
+            mejor[k][3] < p["entrega"] for k, p in pedidos.items() if p["entregado"] and k in mejor and p["retraso"] >= 7), 1),
+        "nota_respondio_antes_1_a_6": round(statistics.fmean(
+            mejor[k][1] for k, p in pedidos.items() if p["entregado"] and k in mejor and 1 <= p["retraso"] <= 6 and mejor[k][3] < p["entrega"]), 2),
+        "nota_respondio_despues_1_a_6": round(statistics.fmean(
+            mejor[k][1] for k, p in pedidos.items() if p["entregado"] and k in mejor and 1 <= p["retraso"] <= 6 and mejor[k][3] >= p["entrega"]), 2),
         "pct_tarde_contando_mismo_dia": round(100 * sum(p["entrega"] > p["promesa"] for p in entregados) / len(entregados), 1),
     }
 

@@ -5,11 +5,11 @@ orden,clave,valor,decimales,descripcion
 4,pct_tarde,6.8,1,% de entregas tarde
 5,dias_entrega_prom,12.5,1,Días promedio de la compra a la entrega
 6,dias_prometidos_prom,24.4,1,Días promedio que promete Olist
-7,pct_retrasos_vendedor_a_tiempo,72.2,1,% de los pedidos tarde en que el vendedor despachó a tiempo
+7,pct_retrasos_vendedor_a_tiempo,77.6,1,% de los pedidos tarde en que el vendedor despachó a tiempo
 8,dias_transportadora_tarde,27.9,1,"Días en la transportadora, pedidos tarde"
 9,dias_transportadora_a_tiempo,8.0,1,"Días en la transportadora, pedidos a tiempo"
-10,top5_pct_retrasos,58.7,1,% de los retrasos del 5 % de vendedores con más retrasos
-11,top5_pct_pedidos,49.9,1,% de los pedidos de ese mismo 5 %
+10,tamano_pct_tarde_min,6.4,1,% tarde del grupo de tamaño de vendedor que menos se atrasa
+11,tamano_pct_tarde_max,7.3,1,% tarde del grupo de tamaño de vendedor que más se atrasa
 12,rj_pct_entregas,12.8,1,% de las entregas que van a Rio de Janeiro
 13,rj_pct_retrasos,22.9,1,% de los retrasos que van a Rio de Janeiro
 14,nota_a_tiempo,4.29,2,Nota promedio si llega a tiempo
@@ -18,12 +18,16 @@ orden,clave,valor,decimales,descripcion
 17,flete_pct_total,16.6,1,"Flete como % del precio, todos los pedidos"
 18,pct_pedidos_menos_50,29.8,1,% de pedidos de menos de R$50
 19,flete_pct_menos_50,48.4,1,Flete como % del precio en pedidos de menos de R$50
-20,pct_flete_mayor_menos_50,10.2,1,% de esos pedidos donde el flete cuesta más que el producto
+20,pct_flete_mayor_menos_50,10.1,1,% de esos pedidos donde el flete cuesta más que el producto
 21,pct_clientes_recompran,2.2,1,% de clientes que compraron en más de un día
 22,recompra_primera_a_tiempo,1.85,2,% que volvió en 180 días si la primera entrega llegó a tiempo
 23,recompra_primera_tarde,1.37,2,% que volvió en 180 días si la primera entrega llegó tarde
 24,z_recompra,1.82,2,"Prueba z de la diferencia (desde 1,96 se descarta la casualidad al 95 %)"
-25,rfm_ticket_alto_pct_clientes,22.7,1,% de clientes: una compra de ticket alto y no volvieron
+25,rfm_ticket_alto_pct_clientes,22.7,1,"% de clientes: una sola compra, de ticket alto (40 % que más gasta), hace más de 6 meses"
 26,rfm_ticket_alto_pct_monto,41.1,1,% del dinero que dejaron esos clientes
 27,pct_tarde_contando_mismo_dia,8.1,1,% tarde si también cuenta lo que llega el mismo día prometido
-28,pct_resena_antes_7_mas,99.7,1,% de reseñas con 7 o más días de retraso escritas antes de recibir el paquete
+28,pct_respondio_antes_7_mas,96.2,1,% de reseñas con 7 o más días de retraso que el cliente respondió antes de recibir el paquete
+29,peores10_pct_tarde,16.9,1,% tarde del 10 % de vendedores (30+ pedidos) con peor tasa
+30,peores10_pct_retrasos,12.7,1,% de todos los retrasos que tiene ese 10 %
+31,nota_respondio_antes_1_a_6,1.65,2,Nota con 1 a 6 días de retraso si respondió antes de recibir
+32,nota_respondio_despues_1_a_6,3.73,2,Nota con 1 a 6 días de retraso si respondió después de recibir

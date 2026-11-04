@@ -81,10 +81,10 @@ table Medidas
 		lineageTag: b646fa9d-f787-5a27-8643-d7df73768f25
 
 	/// Vendedores con al menos un pedido.
-	measure 'Vendedores con ventas' = DISTINCTCOUNT ( PedidoVendedor[vendedor_id] )
+	measure 'Vendedores con entregas' = CALCULATE ( DISTINCTCOUNT ( PedidoVendedor[vendedor_id] ), PedidoVendedor[entregado] = TRUE () )
 		formatString: #,0
 		displayFolder: Vendedores
-		lineageTag: 5a4b2a95-5ee7-5d91-8064-9bc82e65c571
+		lineageTag: 389a18e9-ed64-5696-8a33-1828adebd7f0
 
 	/// Unidad: lo que despachó un vendedor en un pedido.
 	measure 'Pedidos de vendedor entregados' = CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[entregado] = TRUE () )
@@ -97,17 +97,26 @@ table Medidas
 		displayFolder: Vendedores
 		lineageTag: f50cb669-c042-53ec-aaca-4fffc217f01e
 
+	/// Para las rutas: en un pedido de dos vendedores no se sabe cuál causó el retraso (igual que en sql/08).
+	measure 'Tarde (pedidos de un vendedor)' = CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1 )
+		formatString: #,0
+		displayFolder: Vendedores
+		lineageTag: 7e96f60b-32dd-5af6-95e5-dc77bfce6fbb
+
 	measure '% tarde (vendedor)' = DIVIDE ( [Pedidos de vendedor tarde], [Pedidos de vendedor entregados] )
 		formatString: 0.0%
 		displayFolder: Vendedores
 		lineageTag: 83641a4a-fcaf-5dfd-ab2b-ff13f010d31e
 
-	/// El vendedor entregó a la transportadora después de su fecha límite.
+	/// El vendedor entregó a la transportadora un día después de su fecha límite. Solo pedidos de un vendedor: la fecha de la transportadora es una por pedido.
 	measure '% despacho tarde' =
-			DIVIDE (
-			    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[despacho] = "Tarde" ),
-			    [Pedidos de vendedor entregados]
-			)
+			VAR UnVendedorConDato =
+			    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] <> "Sin dato" )
+			RETURN
+			    DIVIDE (
+			        CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] = "Tarde" ),
+			        UnVendedorConDato
+			    )
 		formatString: 0.0%
 		displayFolder: Vendedores
 		lineageTag: 3db54ef9-8c78-5ffe-af13-c8ec2c258fab
@@ -152,7 +161,7 @@ table Medidas
 		lineageTag: 2a954f1a-e5ad-5562-abce-91c98ba2b170
 
 	/// Clientes que compraron en más de un día.
-	measure '% que vuelve a comprar' = DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )
+	measure '% que vuelve a comprar' = DIVIDE ( CALCULATE ( [Clientes], KEEPFILTERS ( RFM[frecuencia] > 1 ) ), [Clientes] )
 		formatString: 0.0%
 		displayFolder: Clientes
 		lineageTag: 41912253-1e1f-567d-b34f-142d24bf5a66
@@ -164,7 +173,7 @@ table Medidas
 		lineageTag: 2f3d4c3d-5449-563f-b681-a836ab5e21f7
 
 	/// Suma de fletes sobre suma de precios.
-	measure 'Flete % del precio' = DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )
+	measure 'Flete % del precio' = CALCULATE ( DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) ), Pedidos[entregado] = TRUE () )
 		formatString: 0.0%
 		displayFolder: Clientes
 		lineageTag: 3963a7fc-de91-537d-850c-fa02aa3d4194

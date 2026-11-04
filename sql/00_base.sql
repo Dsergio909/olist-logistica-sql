@@ -68,10 +68,13 @@ join clientes c on c.cliente_pedido_id = o.customer_id;
 -- Una sola reseña por pedido: hay pedidos con 2 o 3 reseñas; se queda la más
 -- reciente (la última respuesta del cliente).
 create or replace table resenas as
-select pedido_id, nota, tiene_comentario, fecha_resena
+-- fecha_encuesta  = cuándo Olist envió la encuesta (review_creation_date).
+-- fecha_respuesta = cuándo el cliente la respondió (review_answer_timestamp).
+select pedido_id, nota, tiene_comentario, fecha_encuesta, fecha_respuesta
 from (
     select order_id as pedido_id, review_score as nota, tiene_comentario,
-           review_creation_date as fecha_resena,
+           review_creation_date as fecha_encuesta,
+           review_answer_timestamp as fecha_respuesta,
            row_number() over (partition by order_id
                               order by review_answer_timestamp desc, review_creation_date desc, review_id) as orden
     from resenas_crudas

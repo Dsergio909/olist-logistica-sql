@@ -44,10 +44,14 @@ filas(orden, clave, valor, decimales, descripcion) as (
            from r_etapas where resultado = 'Llegó tarde' union all
     select 9,  'dias_transportadora_a_tiempo', dias_transportadora, 1, 'Días en la transportadora, pedidos a tiempo'
            from r_etapas where resultado = 'A tiempo' union all
-    select 10, 'top5_pct_retrasos', pct_de_los_retrasos, 1, '% de los retrasos del 5 % de vendedores con más retrasos'
-           from r_concentracion_retrasos where pct_vendedores = 5 union all
-    select 11, 'top5_pct_pedidos', pct_de_los_pedidos, 1, '% de los pedidos de ese mismo 5 %'
-           from r_concentracion_retrasos where pct_vendedores = 5 union all
+    select 10, 'tamano_pct_tarde_min', min(pct_tarde), 1, '% tarde del grupo de tamaño de vendedor que menos se atrasa'
+           from r_retraso_por_tamano union all
+    select 11, 'tamano_pct_tarde_max', max(pct_tarde), 1, '% tarde del grupo de tamaño de vendedor que más se atrasa'
+           from r_retraso_por_tamano union all
+    select 29, 'peores10_pct_tarde', pct_tarde, 1, '% tarde del 10 % de vendedores (30+ pedidos) con peor tasa'
+           from r_peores_vendedores union all
+    select 30, 'peores10_pct_retrasos', pct_de_los_retrasos, 1, '% de todos los retrasos que tiene ese 10 %'
+           from r_peores_vendedores union all
     select 12, 'rj_pct_entregas', pct_entregas, 1, '% de las entregas que van a Rio de Janeiro' from rj where estado = 'RJ' union all
     select 13, 'rj_pct_retrasos', pct_retrasos, 1, '% de los retrasos que van a Rio de Janeiro' from rj where estado = 'RJ' union all
     select 14, 'nota_a_tiempo', nota_prom, 2, 'Nota promedio si llega a tiempo'
@@ -56,10 +60,17 @@ filas(orden, clave, valor, decimales, descripcion) as (
            from r_pendiente_nota where tramo = '2. De 1 a 6 días tarde' union all
     select 16, 'nota_7_dias_o_mas', nota_prom, 2, 'Nota promedio con 7 o más días de retraso'
            from r_pendiente_nota where tramo = '3. 7 o más días tarde' union all
-    select 28, 'pct_resena_antes_7_mas', pct_resena_antes_de_recibir, 1,
-               '% de reseñas con 7 o más días de retraso escritas antes de recibir el paquete'
+    select 28, 'pct_respondio_antes_7_mas', pct_respondio_antes_de_recibir, 1,
+               '% de reseñas con 7 o más días de retraso que el cliente respondió antes de recibir el paquete'
            from r_pendiente_nota where tramo = '3. 7 o más días tarde' union all
-    select 17, 'flete_pct_total', (select round(100.0 * sum(flete) / sum(precio), 1) from pedido_valor), 1,
+    select 31, 'nota_respondio_antes_1_a_6', nota_si_respondio_antes, 2,
+               'Nota con 1 a 6 días de retraso si respondió antes de recibir'
+           from r_pendiente_nota where tramo = '2. De 1 a 6 días tarde' union all
+    select 32, 'nota_respondio_despues_1_a_6', nota_si_respondio_despues, 2,
+               'Nota con 1 a 6 días de retraso si respondió después de recibir'
+           from r_pendiente_nota where tramo = '2. De 1 a 6 días tarde' union all
+    select 17, 'flete_pct_total', (select round(100.0 * sum(flete) / sum(precio), 1)
+                                   from pedido_valor join pedidos using (pedido_id) where entregado), 1,
                'Flete como % del precio, todos los pedidos' union all
     select 18, 'pct_pedidos_menos_50', pct_pedidos, 1, '% de pedidos de menos de R$50'
            from r_flete_por_rango_precio where orden_rango = 1 union all
@@ -74,7 +85,7 @@ filas(orden, clave, valor, decimales, descripcion) as (
            from r_recompra_primera_entrega where grupo = 'Primera entrega tarde' union all
     select 24, 'z_recompra', z_diferencia, 2, 'Prueba z de la diferencia (desde 1,96 se descarta la casualidad al 95 %)'
            from r_recompra_primera_entrega where grupo = 'Primera entrega tarde' union all
-    select 25, 'rfm_ticket_alto_pct_clientes', pct_clientes, 1, '% de clientes: una compra de ticket alto y no volvieron'
+    select 25, 'rfm_ticket_alto_pct_clientes', pct_clientes, 1, '% de clientes: una sola compra, de ticket alto (40 % que más gasta), hace más de 6 meses'
            from r_rfm_segmentos where segmento = '5. Ticket alto que no volvió' union all
     select 26, 'rfm_ticket_alto_pct_monto', pct_monto, 1, '% del dinero que dejaron esos clientes'
            from r_rfm_segmentos where segmento = '5. Ticket alto que no volvió'

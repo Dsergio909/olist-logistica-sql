@@ -8,3 +8,4 @@ orden,chequeo,cantidad,que_hago
 7,Pedidos con más de una reseña,547,Me quedo con la más reciente
 8,Pedidos con pago distinto a precio + flete (más de R$1),250,Intereses de cuotas y vales (y 1 pedido sin pago): no afecta la logística
 9,Productos sin categoría,610,Quedan como sin_categoria
+10,Entregado a la transportadora antes de aprobar el pago,1350,Se dejan: la etapa del vendedor sale negativa y baja un poco su promedio

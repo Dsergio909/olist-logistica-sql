@@ -8,7 +8,9 @@
 --                               primer pedido? Con prueba z de dos proporciones.
 -- Uso pedidos de todos los estados menos cancelados y no disponibles.
 -- Volver a comprar = una compra en OTRO DÍA. 281 clientes tienen dos pedidos en el
--- mismo segundo: es una sola compra partida en dos, no una recompra.
+-- mismo segundo (una compra partida en dos) y otros 573 hicieron otro pedido el
+-- mismo día, horas después. Lo cuento como la misma visita a la tienda: si se
+-- contaran, la recompra sería 2,8 % en vez de 2,2 %.
 -- =============================================================================
 
 create or replace table compras_validas as
@@ -35,18 +37,25 @@ with actividad as (
 ),
 tamano as (
     select cohorte, count(*) as clientes from primera_compra group by 1
+),
+-- Todas las celdas que sí se pudieron observar (hasta ago-2018), también las que
+-- tuvieron 0 clientes de vuelta: si faltan, cualquier promedio sale inflado.
+grilla as (
+    select t.cohorte, t.clientes, m.mes_desde_primera
+    from tamano t
+    cross join generate_series(0, 12) as m(mes_desde_primera)
+    where t.cohorte between date '2017-01-01' and date '2018-08-01'
+      and t.cohorte + to_months(m.mes_desde_primera) <= date '2018-08-01'
 )
-select a.cohorte,
-       t.clientes                                           as clientes_cohorte,
-       a.mes_desde_primera,
-       count(*)                                             as clientes_que_volvieron,
-       round(100.0 * count(*) / t.clientes, 2)              as pct_volvieron
-from actividad a
-join tamano t using (cohorte)
-where a.cohorte between date '2017-01-01' and date '2018-08-01'   -- meses con datos completos
-  and a.mes_desde_primera between 0 and 12
-group by a.cohorte, t.clientes, a.mes_desde_primera
-order by a.cohorte, a.mes_desde_primera;
+select g.cohorte,
+       g.clientes                                           as clientes_cohorte,
+       g.mes_desde_primera,
+       count(a.cliente_id)                                  as clientes_que_volvieron,
+       round(100.0 * count(a.cliente_id) / g.clientes, 2)   as pct_volvieron
+from grilla g
+left join actividad a using (cohorte, mes_desde_primera)
+group by g.cohorte, g.clientes, g.mes_desde_primera
+order by g.cohorte, g.mes_desde_primera;
 
 -- ¿Influye la primera entrega? Todos se miden con la MISMA ventana: 180 días
 -- después de RECIBIR el primer pedido (una compra hecha antes de recibirlo no

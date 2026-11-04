@@ -41,11 +41,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Pedidos de vendedor tarde"
+                  "Property": "Tarde (pedidos de un vendedor)"
                 }
               },
-              "queryRef": "Medidas.Pedidos de vendedor tarde",
-              "nativeQueryRef": "Pedidos de vendedor tarde"
+              "queryRef": "Medidas.Tarde (pedidos de un vendedor)",
+              "nativeQueryRef": "Tarde (pedidos de un vendedor)"
             }
           ]
         }
@@ -60,7 +60,7 @@
                     "Entity": "Medidas"
                   }
                 },
-                "Property": "Pedidos de vendedor tarde"
+                "Property": "Tarde (pedidos de un vendedor)"
               }
             },
             "direction": "Descending"
@@ -202,7 +202,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Rutas con más entregas tarde (vendedor → cliente)'"
+                  "Value": "'Rutas con más entregas tarde (pedidos de un vendedor)'"
                 }
               }
             },

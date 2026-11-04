@@ -4,7 +4,7 @@
 
 I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to answer three logistics questions: where deliveries get delayed, how much shipping weighs on the price, and which sellers deliver on time. I used SQL (DuckDB) and a 4-page Power BI dashboard.
 
-> **In 30 seconds:** 6.8% of deliveries arrive late, but in 72.2% of those cases the seller shipped on time: the problem is transport. And being late is expensive: the review score drops from 4.29 to 1.73 within a week of delay. And almost nobody buys again: 2.2%.
+> **In 30 seconds:** 6.8% of deliveries arrive late, but in 77.6% of those cases the seller shipped on time: the problem is transport. And being late is expensive: the review score drops from 4.29 to 1.73 within a week of delay. And almost nobody buys again: 2.2%.
 
 ![Logistics page of the dashboard](capturas/01_logistica.png)
 
@@ -14,16 +14,16 @@ I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to ans
 On average it promises 24.4 days and delivers in 12.5. Even so, 6,534 of the 96,470 delivered orders arrived late: 6.8%. Rio de Janeiro gets 12.8% of the deliveries but 22.9% of the delays.
 
 **2. When an order is late, it is rarely the seller's fault.**
-In 72.2% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it is not a handful of bad sellers: the 5% of sellers with the most delays have 58.7% of the delays, but also 49.9% of the orders. Delays follow volume.
+In 77.6% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it does not depend on seller size: small or large, sellers arrive late between 6.4% and 7.3% of the time. There are bad sellers: the worst 10% by late rate (among those with 30+ orders) are late 16.9% of the time, but they account for only 12.7% of all delays. Fixing those sellers does not fix the problem.
 
 **3. The review score drops in the first week, and after that it no longer matters how late.**
-On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. And I found out why: 99.7% of those reviews were written before the package arrived. The customer rates the wait, not the product, so what hurts is missing the date, not by how much.
+On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. And I found out why: 96.2% of those customers answered the survey before the package arrived. They rate the wait, not the product. It shows in the first week: with 1 to 6 days of delay, those who answer before receiving give 1.65, and those who wait to receive it give 3.73. During the first week every day counts; after that, the score is already set.
 
 **4. On cheap orders, shipping is almost half the price.**
-Across Olist, shipping is 16.6% of the product price. But on orders under R$50, which are 29.8% of all orders, shipping is 48.4%. In 10.2% of those orders shipping costs more than what was bought.
+Across Olist, shipping is 16.6% of the product price. But on orders under R$50, which are 29.8% of all orders, shipping is 48.4%. In 10.1% of those orders shipping costs more than what was bought. (Delivered orders only.)
 
 **5. Almost nobody comes back, and I could not prove the delay is the cause.**
-Over the whole period, only 2.2% of customers bought on more than one day. At first I found that customers whose first order arrived late come back much less, but then I noticed they bought closer to the end of the data and had less time to return. Measuring everyone the same way, 180 days from when they received their first order (anything bought before receiving it cannot be a reaction to the delay), 1.85% came back if it arrived on time and 1.37% if it was late. The z-test gives 1.82, below 1.96: the difference may be chance. What does matter is something else: 22.7% of customers made a single high-value purchase (top 40% by spend) and never returned, and that group left 41.1% of the money.
+Over the whole period, only 2.2% of customers bought on more than one day. At first I found that customers whose first order arrived late come back much less, but then I noticed they bought closer to the end of the data and had less time to return. Measuring everyone the same way, 180 days from when they received their first order (anything bought before receiving it cannot be a reaction to the delay), 1.85% came back if it arrived on time and 1.37% if it was late. The z-test gives 1.82, below 1.96: there is a signal, but not enough to claim it at 95%, because few customers had a late delivery. What does matter is something else: 22.7% of customers bought once, a high-value order (top 40% by spend), more than 6 months ago, and never returned. That group left 41.1% of the money.
 
 **What I would test with this:** review the São Paulo → Rio de Janeiro route with the carrier before looking at sellers, warn the customer as soon as an order is going to be late (the score drops from day one), and look for ways to group shipments under R$50.
 
@@ -33,9 +33,9 @@ Over the whole period, only 2.2% of customers bought on more than one day. At fi
 >
 > The first thing I saw is that the store promises almost double the time it actually takes: it promises 24 days and delivers in twelve and a half. Still, one in fifteen orders arrives late, and Rio de Janeiro takes almost a quarter of those delays.
 >
-> What surprised me most is that the problem is not the sellers. In seven out of ten late orders, the seller shipped on time and the time was lost with the carrier. And the sellers with the most delays are mostly the ones that sell the most.
+> What surprised me most is that the problem is not the sellers. In almost eight out of ten late orders, the seller shipped on time and the time was lost with the carrier. And large and small sellers are late in almost the same proportion.
 >
-> Then I crossed deliveries with reviews. One day late already lowers the score, and after a week it hits the floor: from 4.3 it goes to 1.7 and stays there. I also thought customers whose first order arrived late come back less, but once I gave everyone the same time to return, the difference was no longer strong enough to claim. I would rather say that than tell something the data does not support.
+> Then I crossed deliveries with reviews. One day late already lowers the score, and after a week it hits the floor: from 4.3 it goes to 1.7 and stays there. Almost all those customers rate before the package arrives: they rate the wait. I also thought customers whose first order arrived late come back less, but once I gave everyone the same time to return, the difference was no longer strong enough to claim. I would rather say that than tell something the data does not support.
 >
 > Everything is in numbered SQL queries, with automated tests that check every number in the README comes from the data. The Power BI dashboard has four pages: logistics, sellers, customers and reviews.
 

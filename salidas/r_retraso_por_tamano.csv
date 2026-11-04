@@ -1,0 +1,6 @@
+orden_tamano,tamano_vendedor,vendedores,pedidos,pct_tarde
+1,Menos de 10 pedidos,1731,5941,6.9
+2,10 a 49,802,17656,6.8
+3,50 a 199,334,31788,6.4
+4,200 a 999,71,26424,7.3
+5,1.000 o más,10,13386,7.2

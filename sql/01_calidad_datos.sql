@@ -29,6 +29,11 @@ chequeos as (
            'Se dejan: son pocos y no cambian los promedios'
     from pedidos
     union all
+    select 10, 'Entregado a la transportadora antes de aprobar el pago',
+           count(*) filter (where entregado and fecha_entrega_transportadora < fecha_aprobacion),
+           'Se dejan: la etapa del vendedor sale negativa y baja un poco su promedio'
+    from pedidos
+    union all
     select 5, 'Entregado a la transportadora antes de la compra',
            count(*) filter (where fecha_entrega_transportadora < fecha_compra),
            'Se dejan: error de registro de la fuente'

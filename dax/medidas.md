@@ -128,12 +128,12 @@ Formato: `0.00`
 
 ## Vendedores
 
-### Vendedores con ventas
+### Vendedores con entregas
 Vendedores con al menos un pedido.
 
 ```dax
-Vendedores con ventas =
-DISTINCTCOUNT ( PedidoVendedor[vendedor_id] )
+Vendedores con entregas =
+CALCULATE ( DISTINCTCOUNT ( PedidoVendedor[vendedor_id] ), PedidoVendedor[entregado] = TRUE () )
 ```
 Formato: `#,0`
 
@@ -154,6 +154,15 @@ CALCULATE ( COUNTROWS ( PedidoVendedor ), PedidoVendedor[tarde] = TRUE () )
 ```
 Formato: `#,0`
 
+### Tarde (pedidos de un vendedor)
+Para las rutas: en un pedido de dos vendedores no se sabe cuál causó el retraso (igual que en sql/08).
+
+```dax
+Tarde (pedidos de un vendedor) =
+CALCULATE ( [Pedidos de vendedor tarde], PedidoVendedor[vendedores_del_pedido] = 1 )
+```
+Formato: `#,0`
+
 ### % tarde (vendedor)
 
 ```dax
@@ -163,14 +172,17 @@ DIVIDE ( [Pedidos de vendedor tarde], [Pedidos de vendedor entregados] )
 Formato: `0.0%`
 
 ### % despacho tarde
-El vendedor entregó a la transportadora después de su fecha límite.
+El vendedor entregó a la transportadora un día después de su fecha límite. Solo pedidos de un vendedor: la fecha de la transportadora es una por pedido.
 
 ```dax
 % despacho tarde =
-DIVIDE (
-    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[despacho] = "Tarde" ),
-    [Pedidos de vendedor entregados]
-)
+VAR UnVendedorConDato =
+    CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] <> "Sin dato" )
+RETURN
+    DIVIDE (
+        CALCULATE ( [Pedidos de vendedor entregados], PedidoVendedor[vendedores_del_pedido] = 1, PedidoVendedor[despacho] = "Tarde" ),
+        UnVendedorConDato
+    )
 ```
 Formato: `0.0%`
 
@@ -237,7 +249,7 @@ Clientes que compraron en más de un día.
 
 ```dax
 % que vuelve a comprar =
-DIVIDE ( CALCULATE ( [Clientes], RFM[frecuencia] > 1 ), [Clientes] )
+DIVIDE ( CALCULATE ( [Clientes], KEEPFILTERS ( RFM[frecuencia] > 1 ) ), [Clientes] )
 ```
 Formato: `0.0%`
 
@@ -255,7 +267,7 @@ Suma de fletes sobre suma de precios.
 
 ```dax
 Flete % del precio =
-DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) )
+CALCULATE ( DIVIDE ( SUM ( Pedidos[flete] ), SUM ( Pedidos[precio] ) ), Pedidos[entregado] = TRUE () )
 ```
 Formato: `0.0%`
 

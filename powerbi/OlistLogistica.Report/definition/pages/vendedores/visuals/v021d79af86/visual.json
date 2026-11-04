@@ -23,11 +23,11 @@
                       "Entity": "Medidas"
                     }
                   },
-                  "Property": "Vendedores con ventas"
+                  "Property": "Vendedores con entregas"
                 }
               },
-              "queryRef": "Medidas.Vendedores con ventas",
-              "nativeQueryRef": "Vendedores con ventas"
+              "queryRef": "Medidas.Vendedores con entregas",
+              "nativeQueryRef": "Vendedores con entregas"
             }
           ]
         }

@@ -2,11 +2,15 @@
 -- 03_entrega_por_vendedor.sql · ¿Qué vendedores cumplen?
 -- Un pedido puede tener varios vendedores; aquí la unidad es "pedido de un
 -- vendedor" (lo que despacha cada uno).
---   despacho_tarde = el vendedor entregó a la transportadora después de su
---                    fecha límite (shipping_limit_date).
+--   despacho_tarde = el vendedor entregó a la transportadora un día después de
+--                    su fecha límite (shipping_limit_date), en días de calendario
+--                    como "tarde". Antes se comparaban horas y entregar el último
+--                    día por la tarde contaba como tarde (corregido el 4-nov).
 -- Resultados:
 --   r_vendedores           vendedores con 30 o más pedidos entregados.
---   r_concentracion_retrasos  qué parte de los retrasos se llevan los peores.
+--   r_concentracion_retrasos  qué parte de los retrasos se llevan los que más acumulan.
+--   r_retraso_por_tamano     ¿los vendedores grandes llegan más tarde que los chicos?
+--   r_peores_vendedores      el 10 % de vendedores (30+ pedidos) con peor tasa.
 -- Técnica: CTE, NTILE, RANK, PERCENT_RANK y suma acumulada con ventana.
 -- =============================================================================
 
@@ -16,7 +20,7 @@ select pv.vendedor_id,
        p.dias_entrega,
        p.dias_retraso,
        p.dias_retraso > 0                                   as tarde,
-       p.fecha_entrega_transportadora > pv.fecha_limite_despacho as despacho_tarde,
+       p.fecha_entrega_transportadora::date > pv.fecha_limite_despacho::date as despacho_tarde,
        r.nota
 from pedido_vendedor pv
 join pedidos p using (pedido_id)
@@ -44,7 +48,8 @@ select v.vendedor_id,
        round(v.nota_prom, 2)                                       as nota_prom,
        rank() over (order by v.pedidos_tarde * 1.0 / v.pedidos_entregados desc) as puesto_por_retraso,
        -- 1 = el 25 % que más cumple, 4 = el 25 % que menos cumple. Con PERCENT_RANK
-       -- los vendedores empatados quedan en el mismo cuartil (NTILE los partía).
+       -- los vendedores con la misma fracción de retrasos quedan en el mismo cuartil
+       -- (NTILE los partía).
        least(4, 1 + floor(4 * percent_rank() over (order by v.pedidos_tarde * 1.0 / v.pedidos_entregados)))::int as cuartil_retraso
 from por_vendedor v
 join vendedores s using (vendedor_id)
@@ -66,10 +71,11 @@ with por_vendedor as (
 ),
 acumulado as (
     select *,
-           row_number() over (order by tarde desc, pedidos desc, vendedor_id) as puesto,
+           -- A igual número de retrasos, primero el que tiene menos pedidos (peor tasa).
+           row_number() over (order by tarde desc, pedidos asc, vendedor_id) as puesto,
            count(*)    over ()                                                as total_vendedores,
-           sum(tarde)  over (order by tarde desc, pedidos desc, vendedor_id rows unbounded preceding) as tarde_acum,
-           sum(pedidos) over (order by tarde desc, pedidos desc, vendedor_id rows unbounded preceding) as pedidos_acum,
+           sum(tarde)  over (order by tarde desc, pedidos asc, vendedor_id rows unbounded preceding) as tarde_acum,
+           sum(pedidos) over (order by tarde desc, pedidos asc, vendedor_id rows unbounded preceding) as pedidos_acum,
            sum(tarde)  over () as tarde_total,
            sum(pedidos) over () as pedidos_total
     from por_vendedor
@@ -84,3 +90,50 @@ from cortes c
 join acumulado a on a.puesto <= ceil(a.total_vendedores * c.pct_vendedores / 100.0)
 group by 1
 order by 1;
+
+-- Ordenar por cantidad de retrasos siempre pone arriba a los que más venden. La
+-- pregunta justa es por tasa: ¿llegan más tarde los vendedores grandes?
+create or replace table r_retraso_por_tamano as
+with por_vendedor as (
+    select vp.vendedor_id, count(*) as pedidos, count(*) filter (where vp.tarde) as tarde
+    from vendedor_pedidos vp
+    join pedido_valor v using (pedido_id)
+    where v.vendedores = 1
+    group by 1
+)
+select case when pedidos < 10   then 1 when pedidos < 50  then 2
+            when pedidos < 200  then 3 when pedidos < 1000 then 4 else 5 end as orden_tamano,
+       case when pedidos < 10   then 'Menos de 10 pedidos' when pedidos < 50 then '10 a 49'
+            when pedidos < 200  then '50 a 199' when pedidos < 1000 then '200 a 999'
+            else '1.000 o más' end                                      as tamano_vendedor,
+       count(*)                                                         as vendedores,
+       sum(pedidos)                                                     as pedidos,
+       round(100.0 * sum(tarde) / sum(pedidos), 1)                      as pct_tarde
+from por_vendedor
+group by 1, 2
+order by 1;
+
+-- Los peores por tasa: el 10 % de los vendedores con 30 o más pedidos que más
+-- llega tarde. ¿Qué parte de todos los retrasos se llevan?
+create or replace table r_peores_vendedores as
+with por_vendedor as (
+    select vp.vendedor_id, count(*) as pedidos, count(*) filter (where vp.tarde) as tarde
+    from vendedor_pedidos vp
+    join pedido_valor v using (pedido_id)
+    where v.vendedores = 1
+    group by 1
+),
+grandes as (
+    select *,
+           row_number() over (order by tarde * 1.0 / pedidos desc, pedidos desc, vendedor_id) as puesto,
+           count(*) over () as total
+    from por_vendedor
+    where pedidos >= 30
+)
+select count(*)                                                            as vendedores,
+       sum(pedidos)                                                        as pedidos,
+       round(100.0 * sum(tarde) / sum(pedidos), 1)                         as pct_tarde,
+       round(100.0 * sum(tarde) / (select sum(tarde) from por_vendedor), 1)   as pct_de_los_retrasos,
+       round(100.0 * sum(pedidos) / (select sum(pedidos) from por_vendedor), 1) as pct_de_los_pedidos
+from grandes
+where puesto <= ceil(total * 0.10);

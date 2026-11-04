@@ -274,7 +274,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'¿En qué etapa se va el tiempo? (días promedio)'"
+                  "Value": "'¿En qué etapa se va el tiempo? (días con horas, promedio)'"
                 }
               }
             },
