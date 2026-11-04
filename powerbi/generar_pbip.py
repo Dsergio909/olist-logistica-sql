@@ -269,7 +269,7 @@ COLUMNAS = {
     ],
     "Calendario": [
         ("Fecha", "dateTime", "dd/mm/yyyy", False), ("anio", "int64", "0", False),
-        ("inicio_mes", "dateTime", "mmm yyyy", True), ("mes", "string", None, False),
+        ("inicio_mes", "dateTime", "mmm yyyy", False), ("mes", "string", None, False),
     ],
     "RFM": [
         ("cliente_id", "string", None, True), ("recencia_dias", "int64", "0", False),
@@ -476,11 +476,29 @@ def Me(nombre: str) -> dict:
     return {"Measure": {"Expression": {"SourceRef": {"Entity": "Medidas"}}, "Property": nombre}}
 
 
-def proy(campo: dict) -> dict:
+def proy(campo) -> dict:
+    """Campo del gráfico. Se puede pasar (campo, "Nombre visible") para renombrarlo."""
+    nombre = None
+    if isinstance(campo, tuple):
+        campo, nombre = campo
     tipo = "Column" if "Column" in campo else "Measure"
     ent = campo[tipo]["Expression"]["SourceRef"]["Entity"]
     prop = campo[tipo]["Property"]
-    return {"field": campo, "queryRef": f"{ent}.{prop}", "nativeQueryRef": prop}
+    salida = {"field": campo, "queryRef": f"{ent}.{prop}", "nativeQueryRef": prop}
+    if nombre:
+        salida["displayName"] = nombre
+    return salida
+
+
+def unir(base: dict, extra: dict) -> dict:
+    """Une objetos de formato: si los dos tienen la misma clave, junta sus propiedades."""
+    salida = {k: [dict(v[0], properties=dict(v[0]["properties"]))] + v[1:] for k, v in base.items()}
+    for clave, valor in extra.items():
+        if clave in salida and len(valor) == 1 and "selector" not in valor[0] and "selector" not in salida[clave][0]:
+            salida[clave][0]["properties"].update(valor[0]["properties"])
+        else:
+            salida[clave] = valor
+    return salida
 
 
 class Pagina:
@@ -524,7 +542,7 @@ class Pagina:
             self.visuales.append({"name": n, "position": pos, "visual": {
                 "visualType": "card",
                 "query": {"queryState": {"Values": {"projections": [proy(Me(m))]}}},
-                "objects": {"labels": [{"properties": {"color": color(TEXTO), "fontSize": lit(26)}}],
+                "objects": {"labels": [{"properties": {"color": color(TEXTO), "fontSize": lit(26), "labelDisplayUnits": lit(1)}}],
                             "categoryLabels": [{"properties": {"color": color(TEXTO_SUAVE), "fontSize": lit(10)}}]},
                 "visualContainerObjects": {
                     "background": [{"properties": {"show": lit(True), "color": color("#f6f8fa")}}],
@@ -537,10 +555,14 @@ class Pagina:
         if orden:
             campo, direccion = orden
             query["sortDefinition"] = {"sort": [{"field": campo, "direction": direccion}], "isDefaultSort": False}
-        obj = {"labels": [{"properties": {"show": lit(True), "color": color(TEXTO_SUAVE), "fontSize": lit(8)}}]}
+        obj = {"labels": [{"properties": {"show": lit(True), "color": color(TEXTO_SUAVE), "fontSize": lit(8),
+                                          "labelDisplayUnits": lit(1)}}]}
+        if tipo != "tableEx":
+            obj["categoryAxis"] = [{"properties": {"showAxisTitle": lit(False), "labelColor": color(TEXTO_SUAVE)}}]
+            obj["valueAxis"] = [{"properties": {"showAxisTitle": lit(False), "labelColor": color(TEXTO_SUAVE)}}]
         if tipo not in ("tableEx", "scatterChart"):
             obj["dataPoint"] = [{"properties": {"fill": color(ACENTO)}}]
-        obj.update(objetos or {})
+        obj = unir(obj, objetos or {})
         visual = {"visualType": tipo, "query": query, "objects": obj,
                   "visualContainerObjects": {"title": [{"properties": {
                       "show": lit(True), "text": lit(titulo), "fontColor": color(TEXTO), "fontSize": lit(11),
@@ -569,7 +591,7 @@ def paginas() -> list[Pagina]:
     p1 = Pagina("logistica", "¿Dónde se demoran las entregas?",
                 "Entrega real contra la fecha que promete la tienda. Pedidos entregados de Olist (Brasil), 2016 a 2018.")
     p1.tarjetas(["Pedidos entregados", "% tarde", "Días de entrega", "Días prometidos"])
-    p1.grafico("scatterChart", 24, 192, 392, 494, "Mapa: % de entregas tarde por estado (burbuja más grande = más tarde)",
+    p1.grafico("scatterChart", 24, 192, 392, 494, "Mapa: % de entregas tarde (burbuja = % tarde)",
                {"Category": [C("Estados", "codigo")], "X": [Me("Longitud")], "Y": [Me("Latitud")], "Size": [Me("% tarde")]},
                objetos={**SIN_EJES, "categoryLabels": [{"properties": {"show": lit(True), "color": color(TEXTO), "fontSize": lit(8)}}],
                         "dataPoint": [{"properties": {"fill": color(ACENTO)}}],
@@ -578,13 +600,15 @@ def paginas() -> list[Pagina]:
                {"Category": [C("Estados", "codigo")], "Y": [Me("% tarde")]},
                orden=(Me("% tarde"), "Descending"), objetos=EJE_VALOR_OCULTO)
     p1.grafico("lineChart", 840, 192, 416, 239, "% de entregas tarde por mes de compra",
-               {"Category": [C("Calendario", "mes")], "Y": [Me("% tarde (meses completos)")]},
-               orden=(C("Calendario", "mes"), "Ascending"),
+               {"Category": [C("Calendario", "inicio_mes")], "Y": [Me("% tarde (meses completos)")]},
+               orden=(C("Calendario", "inicio_mes"), "Ascending"),
                objetos={"dataPoint": [{"properties": {"fill": color(ACENTO)}}],
-                        "labels": [{"properties": {"show": lit(False)}}]})
+                        "labels": [{"properties": {"show": lit(False)}}],
+                        "categoryAxis": [{"properties": {"axisType": lit("Scalar")}}]})
     p1.grafico("barChart", 840, 447, 416, 239, "¿En qué etapa se va el tiempo? (días promedio)",
                {"Category": [C("Pedidos", "resultado")],
-                "Y": [Me("Aprobar el pago (días)"), Me("Vendedor despacha (días)"), Me("Transportadora (días)")]},
+                "Y": [(Me("Aprobar el pago (días)"), "Aprobar pago"), (Me("Vendedor despacha (días)"), "Vendedor despacha"),
+                      (Me("Transportadora (días)"), "Transportadora")]},
                objetos={**EJE_VALOR_OCULTO, "dataPoint": [
                    {"properties": {"fill": color("#c9d1d9")}, "selector": {"metadata": "Medidas.Aprobar el pago (días)"}},
                    {"properties": {"fill": color(GRIS)}, "selector": {"metadata": "Medidas.Vendedor despacha (días)"}},
@@ -594,13 +618,14 @@ def paginas() -> list[Pagina]:
     p2 = Pagina("vendedores", "¿Qué vendedores cumplen?",
                 "Cada fila es lo que despachó un vendedor en un pedido. Despacho tarde = entregó a la transportadora después de su fecha límite.")
     p2.tarjetas(["Vendedores con ventas", "% despacho tarde", "% tarde (vendedor)", "% de los retrasos con despacho a tiempo"])
-    p2.grafico("clusteredColumnChart", 24, 192, 360, 494, "% de entregas tarde según el despacho del vendedor",
+    p2.grafico("clusteredColumnChart", 24, 192, 360, 494, "% tarde según el despacho del vendedor",
                {"Category": [C("PedidoVendedor", "despacho")], "Y": [Me("% tarde (vendedor)")]},
                objetos=EJE_VALOR_OCULTO, filtros=[filtro_excluir("PedidoVendedor", "despacho", "Sin dato")])
     p2.grafico("tableEx", 400, 192, 480, 494, "Vendedores con más entregas tarde",
-               {"Values": [C("Vendedores", "vendedor_corto"), C("Vendedores", "estado_vendedor"),
-                           Me("Pedidos de vendedor entregados"), Me("Pedidos de vendedor tarde"),
-                           Me("% tarde (vendedor)"), Me("% despacho tarde"), Me("Nota (vendedor)")]},
+               {"Values": [(C("Vendedores", "vendedor_corto"), "Vendedor"), (C("Vendedores", "estado_vendedor"), "Estado"),
+                           (Me("Pedidos de vendedor entregados"), "Entregados"), (Me("Pedidos de vendedor tarde"), "Tarde"),
+                           (Me("% tarde (vendedor)"), "% tarde"), (Me("% despacho tarde"), "% despacho tarde"),
+                           (Me("Nota (vendedor)"), "Nota")]},
                orden=(Me("Pedidos de vendedor tarde"), "Descending"))
     p2.grafico("clusteredBarChart", 896, 192, 360, 494, "Rutas con más entregas tarde (vendedor → cliente)",
                {"Category": [C("PedidoVendedor", "ruta")], "Y": [Me("Pedidos de vendedor tarde")]},
@@ -632,13 +657,15 @@ def paginas() -> list[Pagina]:
                orden=(C("Pedidos", "tramo_retraso"), "Ascending"),
                objetos={**EJE_VALOR_OCULTO, "categoryAxis": [{"properties": {"axisType": lit("Categorical")}}]})
     p4.grafico("lineChart", 24, 498, 608, 188, "Nota promedio por mes de compra",
-               {"Category": [C("Calendario", "mes")], "Y": [Me("Nota promedio (meses completos)")]},
-               orden=(C("Calendario", "mes"), "Ascending"), objetos={"labels": [{"properties": {"show": lit(False)}}]})
+               {"Category": [C("Calendario", "inicio_mes")], "Y": [Me("Nota promedio (meses completos)")]},
+               orden=(C("Calendario", "inicio_mes"), "Ascending"),
+               objetos={"labels": [{"properties": {"show": lit(False)}}],
+                        "categoryAxis": [{"properties": {"axisType": lit("Scalar")}}]})
     p4.grafico("lineChart", 648, 498, 608, 188, "% de notas de 1 o 2 estrellas según los días de retraso",
                {"Category": [C("Pedidos", "tramo_retraso")], "Y": [Me("% notas de 1 o 2")]},
                orden=(C("Pedidos", "tramo_retraso"), "Ascending"),
                objetos={"labels": [{"properties": {"show": lit(False)}}],
-                        "categoryAxis": [{"properties": {"axisType": lit("Categorical")}}]})
+                        "categoryAxis": [{"properties": {"axisType": lit("Scalar")}}]})
     return [p1, p2, p3, p4]
 
 

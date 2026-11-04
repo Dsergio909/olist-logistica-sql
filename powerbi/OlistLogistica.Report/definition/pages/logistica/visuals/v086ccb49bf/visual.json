@@ -23,11 +23,11 @@
                       "Entity": "Calendario"
                     }
                   },
-                  "Property": "mes"
+                  "Property": "inicio_mes"
                 }
               },
-              "queryRef": "Calendario.mes",
-              "nativeQueryRef": "mes"
+              "queryRef": "Calendario.inicio_mes",
+              "nativeQueryRef": "inicio_mes"
             }
           ]
         },
@@ -60,7 +60,7 @@
                     "Entity": "Calendario"
                   }
                 },
-                "Property": "mes"
+                "Property": "inicio_mes"
               }
             },
             "direction": "Ascending"
@@ -77,6 +77,86 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
+            "axisType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scalar'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
                 }
               }
             }

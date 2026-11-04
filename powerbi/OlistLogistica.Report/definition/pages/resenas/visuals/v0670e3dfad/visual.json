@@ -97,21 +97,42 @@
                   "Value": "8D"
                 }
               }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
             }
           }
         }
       ],
-      "dataPoint": [
+      "categoryAxis": [
         {
           "properties": {
-            "fill": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
               "solid": {
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#1d4a35'"
+                      "Value": "'#57606a'"
                     }
                   }
+                }
+              }
+            },
+            "axisType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Categorical'"
                 }
               }
             }
@@ -121,6 +142,24 @@
       "valueAxis": [
         {
           "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
             "show": {
               "expr": {
                 "Literal": {
@@ -138,13 +177,17 @@
           }
         }
       ],
-      "categoryAxis": [
+      "dataPoint": [
         {
           "properties": {
-            "axisType": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Categorical'"
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1d4a35'"
+                    }
+                  }
                 }
               }
             }

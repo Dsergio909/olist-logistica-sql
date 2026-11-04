@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "Medidas.Aprobar el pago (días)",
-              "nativeQueryRef": "Aprobar el pago (días)"
+              "nativeQueryRef": "Aprobar el pago (días)",
+              "displayName": "Aprobar pago"
             },
             {
               "field": {
@@ -59,7 +60,8 @@
                 }
               },
               "queryRef": "Medidas.Vendedor despacha (días)",
-              "nativeQueryRef": "Vendedor despacha (días)"
+              "nativeQueryRef": "Vendedor despacha (días)",
+              "displayName": "Vendedor despacha"
             },
             {
               "field": {
@@ -73,7 +75,8 @@
                 }
               },
               "queryRef": "Medidas.Transportadora (días)",
-              "nativeQueryRef": "Transportadora (días)"
+              "nativeQueryRef": "Transportadora (días)",
+              "displayName": "Transportadora"
             }
           ]
         }
@@ -105,6 +108,75 @@
               "expr": {
                 "Literal": {
                   "Value": "8D"
+                }
+              }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "gridlineShow": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
@@ -164,26 +236,6 @@
           },
           "selector": {
             "metadata": "Medidas.Transportadora (días)"
-          }
-        }
-      ],
-      "valueAxis": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "gridlineShow": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
           }
         }
       ],

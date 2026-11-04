@@ -115,6 +115,13 @@
                   "Value": "8D"
                 }
               }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
             }
           }
         }
@@ -122,6 +129,24 @@
       "categoryAxis": [
         {
           "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
             "show": {
               "expr": {
                 "Literal": {
@@ -135,6 +160,24 @@
       "valueAxis": [
         {
           "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "labelColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#57606a'"
+                    }
+                  }
+                }
+              }
+            },
             "show": {
               "expr": {
                 "Literal": {
@@ -228,7 +271,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Mapa: % de entregas tarde por estado (burbuja más grande = más tarde)'"
+                  "Value": "'Mapa: % de entregas tarde (burbuja = % tarde)'"
                 }
               }
             },

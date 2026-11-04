@@ -34,4 +34,22 @@ Lo que encontré y arreglé:
 | Que el README diga lo que mide el dato | Lectura de cada conclusión contra su consulta | 2 precisiones: el 72,2 % es sobre pedidos de un solo vendedor (casi todos), y «valor alto» es el 40 % que más gasta |
 | Power Query y DAX contra el SQL | Lectura de las 8 consultas M y las 34 medidas contra las definiciones de `00_base.sql` | Iguales: misma definición de entregado y tarde, misma reseña por pedido, mismo despacho tarde |
 
-Sin revisar todavía: que GitHub Actions corra en verde en Linux (se ve al subir la rama) y el tablero abierto en Power BI (estaba ocupado por otros chats).
+El tablero no se pudo abrir en esta vuelta: Power BI estaba ocupado por otros chats (4 ventanas y menos de 0,5 GB de RAM libre). Esperé mi turno.
+
+## Vuelta 3 de errores (4-nov), ya con el tablero abierto
+
+| Qué revisé | Cómo | Resultado |
+|---|---|---|
+| Que el proyecto de texto (PBIP) abra | Abrí `powerbi/OlistLogistica.pbip` en Power BI Desktop 2.159 y actualicé los datos | Abrió sin errores: 8 tablas, 34 medidas, 4 páginas, 40 gráficos. Cargó en unos 75 segundos |
+| Cifras del tablero contra el SQL | `scripts/comparar_tablero.py` lee el texto del PDF exportado y busca en cada página las cifras de `salidas/` | 76 de 76 iguales. Son dos caminos distintos (Power Query + DAX contra DuckDB) |
+| Que se lea bien | Revisé cada página en pantalla | 4 problemas (abajo) |
+| Privacidad del `.pbix` | Lo abrí como zip y busqué rutas con usuario, correos y el nombre de Sergio | Nada. `SecurityBindings` es la configuración de privacidad de las fuentes, cifrada por Windows, sin claves (los datos son archivos locales) |
+
+Lo que encontré y arreglé (en el generador, no a mano):
+1. Las tarjetas decían «96 mil» y «95 mil» en vez de la cifra exacta: ahora muestran 96.470 y 94.990 completos.
+2. Los gráficos mostraban títulos de ejes técnicos («codigo», «tramo_retraso», «Latitud»): quitados.
+3. La tabla de vendedores tenía encabezados como «vendedor_corto» y «Pedidos de vendedor entregados» y no cabía: ahora dice Vendedor, Estado, Entregados, Tarde, % tarde, % despacho tarde y Nota.
+4. Las dos líneas por mes tenían barra de desplazamiento y no se veía 2018 completo: ahora usan un eje de fechas continuo.
+
+Quedan para la vuelta de mejora: el mapa corta algunas burbujas en los bordes, la barra de estados no muestra los 27 en el PDF y los números dentro de las barras oscuras casi no se leen.
+

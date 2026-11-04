@@ -23,7 +23,6 @@ table Calendario
 	column inicio_mes
 		dataType: dateTime
 		formatString: mmm yyyy
-		isHidden
 		lineageTag: ae98906c-cf26-5b32-a516-68fad04ec286
 		summarizeBy: none
 		sourceColumn: inicio_mes
