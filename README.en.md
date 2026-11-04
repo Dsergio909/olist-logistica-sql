@@ -140,4 +140,4 @@ The code and the first analysis were done by Claude (AI) together with me. I def
 ## License
 
 - Code (SQL, Python and the dashboard generator): [MIT](LICENSE).
-- Data in `datos/` and results in `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), attribution: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle).
+- Data in `datos/` and results in `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), attribution: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). Each folder has its own notice: [datos/LICENSE.md](datos/LICENSE.md) and [salidas/LICENSE.md](salidas/LICENSE.md).

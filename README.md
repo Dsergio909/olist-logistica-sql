@@ -145,4 +145,4 @@ El código y el primer análisis los hizo Claude (IA) conmigo. Yo definí las pr
 ## Licencia
 
 - Código (SQL, Python y el generador del tablero): [MIT](LICENSE).
-- Datos de `datos/` y resultados de `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), atribución: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle).
+- Datos de `datos/` y resultados de `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), atribución: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). Cada carpeta trae su propio aviso: [datos/LICENSE.md](datos/LICENSE.md) y [salidas/LICENSE.md](salidas/LICENSE.md).
