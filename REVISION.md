@@ -210,3 +210,11 @@ Antigravity revisó las 3 partes otra vez, ya con las correcciones de la vuelta 
 - Antigravity acertó en la mayoría, pero también propuso 8 cosas que no eran ciertas o no cambiaban nada (por ejemplo, dijo que el segmento RFM empezaba a los 4,5 meses y empieza a los 183 días, o que faltaba una columna que sí existe). Por eso cada hallazgo se comprobó contra los datos antes de aceptarlo.
 - Al final: las 32 cifras del README coinciden por dos caminos (SQL con DuckDB y Python puro sobre los CSV de Kaggle), las 88 cifras del tablero coinciden con el SQL y hay 58 pruebas en verde.
 - El tablero (`.pbix`, PDF y capturas) se rehízo con las cifras auditadas.
+
+## Mapa con el contorno de Brasil (pedido de Sergio, 4-nov, noche)
+
+Sergio: «me gusta el concepto, pero no se distingue que es Brasil». Antes las burbujas flotaban sobre fondo blanco.
+- Contorno de los 27 estados de [Natural Earth](https://www.naturalearthdata.com) (1:50m, dominio público), bajado con su permiso desde el repositorio oficial (2,3 MB). En el repo queda solo Brasil: `powerbi/brasil_estados.json` (96 KB).
+- `powerbi/generar_mapa_brasil.py` dibuja la imagen de fondo con Python puro (país en gris verdoso muy claro, líneas finas entre estados y el borde del país más marcado), con los mismos límites de longitud (-75 a -32) y latitud (-36 a 9) que los ejes del gráfico. El generador del tablero lee esos límites del mismo script, así que no pueden quedar distintos.
+- El mapa pasó de 392 a 520 px de ancho (y la barra de estados de 392 a 264) para que Brasil no se vea estirado. Burbujas un poco más chicas para que el noreste se lea.
+- Comprobado en Power BI: cada burbuja cae sobre su estado. Las 88 cifras del tablero siguen iguales al SQL; 58 pruebas en verde.

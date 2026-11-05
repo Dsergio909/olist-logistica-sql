@@ -13,6 +13,7 @@ parámetro CarpetaRepo si el repo está en otra carpeta, y pulsar Actualizar.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import shutil
 import uuid
@@ -20,6 +21,10 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 PBI = RAIZ / "powerbi"
+# Límites del mapa: se leen del script que dibuja el contorno, para que nunca queden distintos.
+_spec = importlib.util.spec_from_file_location("generar_mapa_brasil", PBI / "generar_mapa_brasil.py")
+MAPA = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(MAPA)
 NOMBRE = "OlistLogistica"
 MODELO = PBI / f"{NOMBRE}.SemanticModel"
 INFORME = PBI / f"{NOMBRE}.Report"
@@ -602,14 +607,24 @@ def paginas() -> list[Pagina]:
     p1 = Pagina("logistica", "¿Dónde se demoran las entregas?",
                 "Entrega real contra la fecha que promete la tienda. Pedidos entregados de Olist (Brasil), 2016 a 2018.", alto=830)
     p1.tarjetas(["Pedidos entregados", "% tarde", "Días de entrega", "Días prometidos"])
-    p1.grafico("scatterChart", 24, 192, 392, 604, "Mapa: % de entregas tarde (burbuja = % tarde)",
+    # Mapa: más ancho para que Brasil no se vea estirado. Los ejes usan los mismos límites que
+    # la imagen de fondo (powerbi/generar_mapa_brasil.py), así cada burbuja cae en su estado.
+    p1.grafico("scatterChart", 24, 192, 520, 604, "Mapa: % de entregas tarde (burbuja = % tarde)",
                {"Category": [C("Estados", "codigo")], "X": [Me("Longitud")], "Y": [Me("Latitud")], "Size": [Me("% tarde")]},
-               objetos={"categoryAxis": [{"properties": {"show": lit(False), "start": lit(-75), "end": lit(-32)}}],
-                        "valueAxis": [{"properties": {"show": lit(False), "gridlineShow": lit(False), "start": lit(-35), "end": lit(6)}}],
+               objetos={"categoryAxis": [{"properties": {"show": lit(False), "start": lit(MAPA.LON[0]), "end": lit(MAPA.LON[1])}}],
+                        "valueAxis": [{"properties": {"show": lit(False), "gridlineShow": lit(False),
+                                                      "start": lit(MAPA.LAT[0]), "end": lit(MAPA.LAT[1])}}],
+                        "plotArea": [{"properties": {
+                            "transparency": lit(0),
+                            "image": {"image": {
+                                "name": lit("mapa_brasil.png"),
+                                "url": {"expr": {"ResourcePackageItem": {"PackageName": "RegisteredResources",
+                                                                         "PackageType": 1, "ItemName": "mapa_brasil.png"}}},
+                                "scaling": lit("Fit")}}}}],
                         "categoryLabels": [{"properties": {"show": lit(True), "color": color(TEXTO), "fontSize": lit(8)}}],
                         "dataPoint": [{"properties": {"fill": color(ACENTO)}}],
-                        "bubbles": [{"properties": {"bubbleSize": lit(-22)}}]})
-    p1.grafico("clusteredBarChart", 432, 192, 392, 604, "% de entregas tarde por estado del cliente",
+                        "bubbles": [{"properties": {"bubbleSize": lit(-25)}}]})
+    p1.grafico("clusteredBarChart", 560, 192, 264, 604, "% tarde por estado del cliente",
                {"Category": [C("Estados", "codigo")], "Y": [Me("% tarde")]},
                orden=(Me("% tarde"), "Descending"),
                objetos={**EJE_VALOR_OCULTO,
@@ -717,6 +732,7 @@ def escribir_informe() -> None:
     propio.mkdir(parents=True)
     tema_base = PBI / "tema_base_CY24SU10.json"
     shutil.copy(tema_base, base / "CY24SU10.json")
+    shutil.copy(PBI / "mapa_brasil.png", propio / "mapa_brasil.png")
     (propio / "TemaOlist.json").write_text(json.dumps(TEMA, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
     (INFORME / "definition.pbir").write_text(json.dumps({
@@ -735,7 +751,8 @@ def escribir_informe() -> None:
             {"name": "SharedResources", "type": "SharedResources",
              "items": [{"name": "CY24SU10", "path": "BaseThemes/CY24SU10.json", "type": "BaseTheme"}]},
             {"name": "RegisteredResources", "type": "RegisteredResources",
-             "items": [{"name": "TemaOlist.json", "path": "TemaOlist.json", "type": "CustomTheme"}]}],
+             "items": [{"name": "TemaOlist.json", "path": "TemaOlist.json", "type": "CustomTheme"},
+                       {"name": "mapa_brasil.png", "path": "mapa_brasil.png", "type": "Image"}]}],
         "settings": {"useStylableVisualContainerHeader": True, "defaultDrillFilterOtherVisuals": True,
                      "allowChangeFilterTypes": True, "useEnhancedTooltips": True}}, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8", newline="\n")

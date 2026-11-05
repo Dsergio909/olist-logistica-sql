@@ -5,7 +5,7 @@
     "x": 24,
     "y": 192,
     "z": 6000,
-    "width": 392,
+    "width": 520,
     "height": 604,
     "tabOrder": 6000
   },
@@ -157,14 +157,14 @@
             "start": {
               "expr": {
                 "Literal": {
-                  "Value": "-75D"
+                  "Value": "-75.0D"
                 }
               }
             },
             "end": {
               "expr": {
                 "Literal": {
-                  "Value": "-32D"
+                  "Value": "-32.0D"
                 }
               }
             }
@@ -209,14 +209,54 @@
             "start": {
               "expr": {
                 "Literal": {
-                  "Value": "-35D"
+                  "Value": "-36.0D"
                 }
               }
             },
             "end": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "9.0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "plotArea": [
+        {
+          "properties": {
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "image": {
+              "image": {
+                "name": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'mapa_brasil.png'"
+                    }
+                  }
+                },
+                "url": {
+                  "expr": {
+                    "ResourcePackageItem": {
+                      "PackageName": "RegisteredResources",
+                      "PackageType": 1,
+                      "ItemName": "mapa_brasil.png"
+                    }
+                  }
+                },
+                "scaling": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'Fit'"
+                    }
+                  }
                 }
               }
             }
@@ -277,7 +317,7 @@
             "bubbleSize": {
               "expr": {
                 "Literal": {
-                  "Value": "-22D"
+                  "Value": "-25D"
                 }
               }
             }

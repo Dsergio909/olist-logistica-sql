@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
   "name": "v0715734179",
   "position": {
-    "x": 432,
+    "x": 560,
     "y": 192,
     "z": 7000,
-    "width": 392,
+    "width": 264,
     "height": 604,
     "tabOrder": 7000
   },
@@ -223,7 +223,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'% de entregas tarde por estado del cliente'"
+                  "Value": "'% tarde por estado del cliente'"
                 }
               }
             },

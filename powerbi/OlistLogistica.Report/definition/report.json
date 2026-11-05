@@ -40,6 +40,11 @@
           "name": "TemaOlist.json",
           "path": "TemaOlist.json",
           "type": "CustomTheme"
+        },
+        {
+          "name": "mapa_brasil.png",
+          "path": "mapa_brasil.png",
+          "type": "Image"
         }
       ]
     }
