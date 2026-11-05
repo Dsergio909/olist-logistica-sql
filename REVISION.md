@@ -218,3 +218,10 @@ Sergio: «me gusta el concepto, pero no se distingue que es Brasil». Antes las 
 - `powerbi/generar_mapa_brasil.py` dibuja la imagen de fondo con Python puro (país en gris verdoso muy claro, líneas finas entre estados y el borde del país más marcado), con los mismos límites de longitud (-75 a -32) y latitud (-36 a 9) que los ejes del gráfico. El generador del tablero lee esos límites del mismo script, así que no pueden quedar distintos.
 - El mapa pasó de 392 a 520 px de ancho (y la barra de estados de 392 a 264) para que Brasil no se vea estirado. Burbujas un poco más chicas para que el noreste se lea.
 - Comprobado en Power BI: cada burbuja cae sobre su estado. Las 88 cifras del tablero siguen iguales al SQL; 58 pruebas en verde.
+
+## En GitHub (4-nov, noche)
+
+Con el «sí» de Sergio («Sí, súbelo»): repo público https://github.com/Dsergio909/olist-logistica-sql, rama `trabajo`.
+- GitHub Actions en Linux: las 11 consultas corren, `salidas/` sale idéntico a lo guardado y las 58 pruebas pasan en verde (lo único que no se había podido ver en el PC).
+- Las acciones `checkout` y `setup-python` se subieron a v7 para quitar el aviso de que usaban Node 20.
+- Antes de subir: 0 commits con Gmail, prueba de privacidad en verde y ningún archivo pasa de 20 MB (el límite de GitHub es 100 MB).
