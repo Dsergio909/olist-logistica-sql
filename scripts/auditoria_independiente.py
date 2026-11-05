@@ -1,7 +1,8 @@
 """Recalcula las cifras clave con Python puro, sin DuckDB y desde los CSV de Kaggle.
 
 Uso:
-    python scripts/auditoria_independiente.py
+    python scripts/descargar_datos.py          # primero: baja los CSV a datos_crudos/
+    python scripts/auditoria_independiente.py  # no necesita ningún paquete extra
 
 Sirve para comprobar el SQL por otro camino: lee los CSV originales de
 datos_crudos/ con el módulo csv (no los Parquet) y compara cada cifra con
@@ -32,6 +33,9 @@ def fecha(texto: str):
 
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
+    if not (CRUDOS / "olist_orders_dataset.csv").exists():
+        print("Faltan los CSV de Kaggle en datos_crudos/. Bájalos con: python scripts/descargar_datos.py")
+        return 1
     cliente_de = {r["customer_id"]: (r["customer_unique_id"], r["customer_state"]) for r in leer("olist_customers_dataset")}
     pedidos = {}
     for r in leer("olist_orders_dataset"):
@@ -158,6 +162,15 @@ def main() -> int:
     segmento = [c for c in clientes if c[2] == 1 and m_q[c[0]] >= 4 and (6 - r_q[c[0]]) <= 3]
     monto_total = sum(c[3] for c in clientes)
 
+    # 33-35. Rutas estado del vendedor -> estado del cliente (pedidos entregados de un vendedor)
+    estado_vendedor = {r["seller_id"]: r["seller_state"] for r in leer("olist_sellers_dataset")}
+
+    def ruta(origen: str, destino: str) -> tuple[int, float]:
+        sel = [pedidos[pid] for (pid, vid) in limite
+               if pedidos[pid]["entregado"] and len(vendedores_pedido[pid]) == 1
+               and estado_vendedor[vid] == origen and pedidos[pid]["estado"] == destino]
+        return len(sel), round(100 * sum(x["retraso"] > 0 for x in sel) / len(sel), 1)
+
     rj = sum(p["estado"] == "RJ" for p in entregados)
     rj_tarde = sum(p["estado"] == "RJ" for p in tarde)
     calculado = {
@@ -195,6 +208,9 @@ def main() -> int:
             mejor[k][1] for k, p in pedidos.items() if p["entregado"] and k in mejor and 1 <= p["retraso"] <= 6 and mejor[k][3] < p["entrega"]), 2),
         "nota_respondio_despues_1_a_6": round(statistics.fmean(
             mejor[k][1] for k, p in pedidos.items() if p["entregado"] and k in mejor and 1 <= p["retraso"] <= 6 and mejor[k][3] >= p["entrega"]), 2),
+        "ruta_sp_rj_pct_tarde": ruta("SP", "RJ")[1],
+        "ruta_sp_rj_pedidos": ruta("SP", "RJ")[0],
+        "ruta_sp_sp_pct_tarde": ruta("SP", "SP")[1],
         "pct_tarde_contando_mismo_dia": round(100 * sum(p["entrega"] > p["promesa"] for p in entregados) / len(entregados), 1),
     }
 

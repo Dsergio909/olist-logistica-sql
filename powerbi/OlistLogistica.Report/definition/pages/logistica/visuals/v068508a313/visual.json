@@ -317,7 +317,7 @@
             "bubbleSize": {
               "expr": {
                 "Literal": {
-                  "Value": "-25D"
+                  "Value": "-28D"
                 }
               }
             }

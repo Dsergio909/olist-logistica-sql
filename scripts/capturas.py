@@ -1,7 +1,7 @@
 """Saca una captura PNG de cada página de tablero.pdf (el PDF que exporta Power BI).
 
 Uso:
-    pip install pypdfium2      (no necesita Pillow: el PNG se escribe con zlib)
+    pip install -r requirements-comprobar.txt   (trae pypdfium2; no necesita Pillow)
     python scripts/capturas.py
 
 Escribe capturas/01_logistica.png ... 04_resenas.png.

@@ -20,6 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Note: the data in datos/ and the results in salidas/ are not covered by this
-license. They come from the Brazilian E-Commerce Public Dataset by Olist
-(Kaggle) and are licensed under CC BY-NC-SA 4.0.
+Note: this license covers only the code. It does NOT cover anything that
+contains Olist data: the data in datos/, the results in salidas/, the Power BI
+file powerbi/OlistLogistica.pbix (it stores the data inside), tablero.pdf and
+the images in capturas/. They come from the Brazilian E-Commerce Public Dataset
+by Olist (Kaggle) and are licensed under CC BY-NC-SA 4.0, attribution: Olist.

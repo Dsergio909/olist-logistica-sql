@@ -33,6 +33,12 @@ filas(orden, clave, valor, decimales, descripcion) as (
     select 2,  'pedidos_entregados',     entregados, 0, 'Pedidos entregados con fecha' from base union all
     select 3,  'pedidos_tarde',          tarde, 0, 'Entregados después de la fecha prometida' from base union all
     select 4,  'pct_tarde',              round(100.0 * tarde / entregados, 1), 1, '% de entregas tarde' from base union all
+    select 33, 'ruta_sp_rj_pct_tarde', pct_tarde, 1, '% tarde en la ruta São Paulo -> Rio de Janeiro (pedidos de un vendedor)'
+           from r_rutas where ruta = 'SP -> RJ' union all
+    select 34, 'ruta_sp_rj_pedidos', pedidos, 0, 'Pedidos de SP -> RJ, la segunda ruta con más pedidos'
+           from r_rutas where ruta = 'SP -> RJ' union all
+    select 35, 'ruta_sp_sp_pct_tarde', pct_tarde, 1, '% tarde en la ruta São Paulo -> São Paulo, la de más pedidos'
+           from r_rutas where ruta = 'SP -> SP' union all
     select 27, 'pct_tarde_contando_mismo_dia', round(100.0 * tarde_por_hora / entregados, 1), 1,
                '% tarde si también cuenta lo que llega el mismo día prometido' from base union all
     select 5,  'dias_entrega_prom',      round(dias_entrega, 1), 1, 'Días promedio de la compra a la entrega' from base union all

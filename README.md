@@ -14,7 +14,7 @@ Analicé 99.441 pedidos reales de Olist, una tienda en línea de Brasil, para re
 En promedio promete 24,4 días y entrega en 12,5. Igual, 6.534 de los 96.470 pedidos entregados llegaron tarde: el 6,8 %. Rio de Janeiro recibe el 12,8 % de las entregas, pero se lleva el 22,9 % de los retrasos.
 
 **2. Cuando llega tarde, casi nunca es culpa del vendedor.**
-En el 77,6 % de los pedidos que llegaron tarde, el vendedor sí entregó a tiempo a la transportadora (cuento los pedidos de un solo vendedor, que son casi todos). El tiempo se pierde en el transporte: 27,9 días en los pedidos tarde contra 8,0 en los que llegan bien. Y no depende del tamaño del vendedor: chicos o grandes, llegan tarde entre el 6,4 % y el 7,3 % de las veces. Sí hay vendedores malos: el 10 % con peor tasa (de los que tienen 30 pedidos o más) llega tarde el 16,9 % de las veces, pero solo se lleva el 12,7 % de los retrasos. Arreglar a esos vendedores no resuelve el problema.
+En el 77,6 % de los pedidos que llegaron tarde, el vendedor sí entregó a tiempo a la transportadora (cuento los pedidos de un solo vendedor, que son casi todos). El tiempo se pierde en el transporte: 27,9 días en los pedidos tarde contra 8,0 en los que llegan bien. Y no depende del tamaño del vendedor: chicos o grandes, llegan tarde entre el 6,4 % y el 7,3 % de las veces. Sí hay vendedores malos. El 10 % con peor tasa, entre los que tienen 30 pedidos o más, llega tarde el 16,9 % de las veces. Pero solo se lleva el 12,7 % de los retrasos. Arreglar a esos vendedores no resuelve el problema.
 
 **3. La nota se cae en la primera semana y después ya no importa cuánto.**
 Si llega a tiempo, la nota promedio es 4,29 de 5. Entre 1 y 6 días tarde, cada día cuesta 0,38 puntos. Desde el día 7 ya no baja más: se queda en 1,73. Y me di cuenta de por qué: el 96,2 % de esos clientes respondió la encuesta antes de que le llegara el paquete. Califican la espera, no el producto. Se nota en la primera semana: con 1 a 6 días de retraso, quien responde antes de recibir pone 1,65, y quien espera a recibirlo pone 3,73. Durante la primera semana cada día cuenta; después, la nota ya está puesta.
@@ -23,9 +23,12 @@ Si llega a tiempo, la nota promedio es 4,29 de 5. Entre 1 y 6 días tarde, cada 
 En todo Olist el flete es el 16,6 % del precio de los productos. Pero en los pedidos de menos de R$50, que son el 29,8 % del total, el flete es el 48,4 %. En el 10,1 % de esos pedidos el envío cuesta más que lo que se compró. (Cuento solo pedidos entregados.)
 
 **5. Casi nadie vuelve, y no pude probar que el retraso sea la causa.**
-En todo el período, solo el 2,2 % de los clientes compró en más de un día. Al principio me salía que quien recibe tarde su primer pedido vuelve mucho menos, pero me di cuenta de que esos clientes compraron más cerca del final de los datos y tuvieron menos tiempo para volver. Midiendo a todos igual, 180 días desde que recibieron su primer pedido (lo que compraron antes de recibirlo no puede ser una reacción al retraso), volvió el 1,85 % si llegó a tiempo y el 1,37 % si llegó tarde. La prueba z da 1,82, por debajo de 1,96: hay una señal, pero no alcanza para afirmarlo al 95 %, porque son pocos clientes con entrega tarde. Lo que sí pesa es otra cosa: el 22,7 % de los clientes compró una sola vez, por un valor alto (del 40 % que más gasta), hace más de 6 meses, y no volvió. Ese grupo dejó el 41,1 % del dinero.
+En todo el período, solo el 2,2 % de los clientes compró en más de un día. Al principio me salía que quien recibe tarde su primer pedido vuelve mucho menos. Pero me di cuenta de que esos clientes compraron más cerca del final de los datos, y tuvieron menos tiempo para volver. Así que medí a todos igual: 180 días desde que recibieron su primer pedido. Lo que compraron antes de recibirlo no cuenta, porque no puede ser una reacción al retraso. Así volvió el 1,85 % si llegó a tiempo y el 1,37 % si llegó tarde. La prueba z da 1,82, por debajo de 1,96: hay una señal, pero no alcanza para afirmarlo al 95 %, porque son pocos clientes con entrega tarde. Lo que sí pesa es otra cosa. El 22,7 % de los clientes compró una sola vez, por un valor alto (del 40 % que más gasta), hace más de 6 meses. No volvió, y ese grupo dejó el 41,1 % del dinero.
 
-**Lo que yo probaría con esto:** revisar con la transportadora la ruta São Paulo → Rio de Janeiro antes que a los vendedores, avisarle al cliente apenas un pedido va a llegar tarde (la nota cae desde el primer día) y buscar cómo agrupar los envíos de menos de R$50.
+**Lo que yo probaría con esto:**
+- Revisar con la transportadora la ruta São Paulo → Rio de Janeiro antes que a los vendedores. Es la segunda con más pedidos (8.048) y llega tarde el 14,3 % de las veces, contra el 4,7 % de São Paulo → São Paulo.
+- Avisarle al cliente apenas un pedido va a llegar tarde, porque la nota cae desde el primer día.
+- Buscar cómo agrupar los envíos de menos de R$50.
 
 ## Cómo explicarlo en 2 minutos
 
@@ -129,9 +132,18 @@ El dataset es público y baja sin cuenta. Si Kaggle llegara a pedir credenciales
 ## Cómo comprobé las cifras
 
 - **58 pruebas con pytest**, que corren solas en GitHub Actions: totales de Kaggle, que las consultas cuadren entre sí, que `salidas/` sea lo que sale del SQL, privacidad y que el README cite exactamente las cifras de `salidas/r_hallazgos.csv` (si cambio un número a mano, la prueba falla).
-- **Por otro camino:** `scripts/auditoria_independiente.py` recalcula las 32 cifras del README con Python puro desde los CSV de Kaggle, sin DuckDB. Dan iguales.
+- **Por otro camino:** `scripts/auditoria_independiente.py` recalcula las 35 cifras del README con Python puro desde los CSV de Kaggle, sin DuckDB. Dan iguales.
 - **El tablero contra el SQL:** `scripts/comparar_tablero.py` lee el PDF de Power BI y compara 88 cifras con `salidas/`. Dan iguales.
 - Todo lo que revisé y arreglé está en [REVISION.md](REVISION.md).
+
+Para correr tú mismo las dos comprobaciones (necesitan dos paquetes más y los CSV de Kaggle):
+
+```bash
+pip install -r requirements-comprobar.txt   # kagglehub y pypdfium2
+python scripts/descargar_datos.py           # baja los CSV a datos_crudos/ (la auditoría los lee)
+python scripts/auditoria_independiente.py   # 35 cifras: Python puro contra el SQL
+python scripts/comparar_tablero.py          # 88 cifras: el PDF del tablero contra el SQL
+```
 
 ## Qué falta
 
@@ -146,4 +158,5 @@ El código y el primer análisis los hizo Claude (IA) conmigo. Yo definí las pr
 ## Licencia
 
 - Código (SQL, Python y el generador del tablero): [MIT](LICENSE).
-- Datos de `datos/` y resultados de `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), atribución: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). Cada carpeta trae su propio aviso: [datos/LICENSE.md](datos/LICENSE.md) y [salidas/LICENSE.md](salidas/LICENSE.md).
+- Todo lo que lleva datos de Olist va bajo [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), con atribución a Olist, y no bajo MIT: `datos/`, `salidas/`, el archivo de Power BI `powerbi/OlistLogistica.pbix` (guarda los datos adentro), `tablero.pdf` y `capturas/`.
+- Fuente: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). `datos/` y `salidas/` traen su propio aviso: [datos/LICENSE.md](datos/LICENSE.md) y [salidas/LICENSE.md](salidas/LICENSE.md).

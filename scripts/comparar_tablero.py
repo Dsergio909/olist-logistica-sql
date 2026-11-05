@@ -1,7 +1,7 @@
 """Compara las cifras del PDF del tablero (Power BI) con los resultados del SQL.
 
 Uso:
-    pip install pypdfium2
+    pip install -r requirements-comprobar.txt   (trae pypdfium2)
     python scripts/comparar_tablero.py
 
 Power BI calcula con Power Query y DAX; el SQL, con DuckDB. Son dos caminos

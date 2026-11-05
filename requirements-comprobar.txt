@@ -1,0 +1,3 @@
+# Solo para los scripts de comprobación (no hacen falta para el SQL ni las pruebas)
+kagglehub==1.0.3     # scripts/descargar_datos.py
+pypdfium2==5.14.0    # scripts/comparar_tablero.py y scripts/capturas.py

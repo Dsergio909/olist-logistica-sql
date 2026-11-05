@@ -14,7 +14,7 @@ I analyzed 99,441 real orders from Olist, a Brazilian online marketplace, to ans
 On average it promises 24.4 days and delivers in 12.5. Even so, 6,534 of the 96,470 delivered orders arrived late: 6.8%. Rio de Janeiro gets 12.8% of the deliveries but 22.9% of the delays.
 
 **2. When an order is late, it is rarely the seller's fault.**
-In 77.6% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it does not depend on seller size: small or large, sellers arrive late between 6.4% and 7.3% of the time. There are bad sellers: the worst 10% by late rate (among those with 30+ orders) are late 16.9% of the time, but they account for only 12.7% of all delays. Fixing those sellers does not fix the problem.
+In 77.6% of the late orders, the seller handed the package to the carrier on time (counting single-seller orders, which are almost all of them). The time is lost in transport: 27.9 days for late orders against 8.0 for on-time ones. And it does not depend on seller size: small or large, sellers arrive late between 6.4% and 7.3% of the time. There are bad sellers. The worst 10% by late rate, among those with 30+ orders, are late 16.9% of the time. But they account for only 12.7% of all delays. Fixing those sellers does not fix the problem.
 
 **3. The review score drops in the first week, and after that it no longer matters how late.**
 On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day costs 0.38 points. From day 7 on it stops falling and stays at 1.73. And I found out why: 96.2% of those customers answered the survey before the package arrived. They rate the wait, not the product. It shows in the first week: with 1 to 6 days of delay, those who answer before receiving give 1.65, and those who wait to receive it give 3.73. During the first week every day counts; after that, the score is already set.
@@ -23,9 +23,12 @@ On time, the average score is 4.29 out of 5. Between 1 and 6 days late, each day
 Across Olist, shipping is 16.6% of the product price. But on orders under R$50, which are 29.8% of all orders, shipping is 48.4%. In 10.1% of those orders shipping costs more than what was bought. (Delivered orders only.)
 
 **5. Almost nobody comes back, and I could not prove the delay is the cause.**
-Over the whole period, only 2.2% of customers bought on more than one day. At first I found that customers whose first order arrived late come back much less, but then I noticed they bought closer to the end of the data and had less time to return. Measuring everyone the same way, 180 days from when they received their first order (anything bought before receiving it cannot be a reaction to the delay), 1.85% came back if it arrived on time and 1.37% if it was late. The z-test gives 1.82, below 1.96: there is a signal, but not enough to claim it at 95%, because few customers had a late delivery. What does matter is something else: 22.7% of customers bought once, a high-value order (top 40% by spend), more than 6 months ago, and never returned. That group left 41.1% of the money.
+Over the whole period, only 2.2% of customers bought on more than one day. At first I found that customers whose first order arrived late come back much less. But then I noticed they bought closer to the end of the data, and had less time to return. So I measured everyone the same way: 180 days from when they received their first order. Anything bought before receiving it does not count, because it cannot be a reaction to the delay. Measured like that, 1.85% came back if it arrived on time and 1.37% if it was late. The z-test gives 1.82, below 1.96: there is a signal, but not enough to claim it at 95%, because few customers had a late delivery. What does matter is something else. 22.7% of customers bought once, a high-value order (top 40% by spend), more than 6 months ago. They never returned, and that group left 41.1% of the money.
 
-**What I would test with this:** review the São Paulo → Rio de Janeiro route with the carrier before looking at sellers, warn the customer as soon as an order is going to be late (the score drops from day one), and look for ways to group shipments under R$50.
+**What I would test with this:**
+- Review the São Paulo → Rio de Janeiro route with the carrier before looking at sellers. It is the second route by orders (8,048) and arrives late 14.3% of the time, against 4.7% for São Paulo → São Paulo.
+- Warn the customer as soon as an order is going to be late, because the score drops from day one.
+- Look for ways to group shipments under R$50.
 
 ## How to explain it in 2 minutes
 
@@ -124,9 +127,18 @@ The dataset is public and downloads without an account. If Kaggle ever asks for 
 ## How I checked the numbers
 
 - **58 pytest tests**, run automatically on GitHub Actions: Kaggle totals, queries that reconcile with each other, `salidas/` matching what the SQL produces, privacy, and the README quoting exactly the numbers in `salidas/r_hallazgos.csv` (if I edit a number by hand, the test fails).
-- **A second route:** `scripts/auditoria_independiente.py` recomputes all 32 README numbers with plain Python from the Kaggle CSVs, without DuckDB. They match.
+- **A second route:** `scripts/auditoria_independiente.py` recomputes all 35 README numbers with plain Python from the Kaggle CSVs, without DuckDB. They match.
 - **Dashboard vs SQL:** `scripts/comparar_tablero.py` reads the Power BI PDF and compares 88 numbers with `salidas/`. They match.
 - Everything I reviewed and fixed is in [REVISION.md](REVISION.md) (in Spanish).
+
+To run both checks yourself (they need two more packages and the Kaggle CSVs):
+
+```bash
+pip install -r requirements-comprobar.txt   # kagglehub and pypdfium2
+python scripts/descargar_datos.py           # downloads the CSVs to datos_crudos/ (the audit reads them)
+python scripts/auditoria_independiente.py   # 35 numbers: plain Python vs SQL
+python scripts/comparar_tablero.py          # 88 numbers: the dashboard PDF vs SQL
+```
 
 ## Limits
 
@@ -141,4 +153,5 @@ The code and the first analysis were done by Claude (AI) together with me. I def
 ## License
 
 - Code (SQL, Python and the dashboard generator): [MIT](LICENSE).
-- Data in `datos/` and results in `salidas/`: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), attribution: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). Each folder has its own notice: [datos/LICENSE.md](datos/LICENSE.md) and [salidas/LICENSE.md](salidas/LICENSE.md).
+- Everything that contains Olist data is under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), attributed to Olist, and not under MIT: `datos/`, `salidas/`, the Power BI file `powerbi/OlistLogistica.pbix` (it stores the data inside), `tablero.pdf` and `capturas/`.
+- Source: Olist, *Brazilian E-Commerce Public Dataset by Olist* (Kaggle). `datos/` and `salidas/` have their own notice: [datos/LICENSE.md](datos/LICENSE.md) and [salidas/LICENSE.md](salidas/LICENSE.md).

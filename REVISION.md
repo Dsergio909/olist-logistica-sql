@@ -225,3 +225,18 @@ Con el «sí» de Sergio («Sí, súbelo»): repo público https://github.com/Ds
 - GitHub Actions en Linux: las 11 consultas corren, `salidas/` sale idéntico a lo guardado y las 58 pruebas pasan en verde (lo único que no se había podido ver en el PC).
 - Las acciones `checkout` y `setup-python` se subieron a v7 para quitar el aviso de que usaban Node 20.
 - Antes de subir: 0 commits con Gmail, prueba de privacidad en verde y ningún archivo pasa de 20 MB (el límite de GitHub es 100 MB).
+
+## Revisión de la nube, primera vuelta (4-nov, noche)
+
+La nube clonó el repo como un desconocido: 58 pruebas en verde, Actions en verde, 22 cifras recalculadas con su propio SQL (todas iguales), 88 de 88 en el tablero, privacidad limpia (archivos, interior del `.pbix`, metadatos del PDF y de las capturas, y los 18 commits) y la voz suena a Sergio. Pidió 5 arreglos y 1 opcional:
+
+| # | Pedido de la nube | Qué hice |
+|---|---|---|
+| 1 | El pie del tablero sale cortado en las 4 páginas | Caja del pie más alta (de 22 a 32 px). Comprobado en el PDF: el texto completo en las 4 páginas. Se agregó «Mapa: Natural Earth.» |
+| 2 | Aclarar que el `.pbix`, el PDF y las capturas también son CC BY-NC-SA | `LICENSE` y los dos README lo dicen ahora, con la lista de lo que lleva datos de Olist |
+| 3 | El README no dice cómo instalar lo que piden los scripts de comprobación | `requirements-comprobar.txt` (kagglehub y pypdfium2, con versión fija) y los 4 comandos en «Cómo comprobé las cifras». La auditoría en Python avisa claro si faltan los CSV (probado) |
+| 4 | La recomendación de São Paulo → Rio no trae su cifra | 3 cifras nuevas en `r_hallazgos` (8.048 pedidos, 14,3 % tarde; São Paulo → São Paulo 4,7 %), en el README y en la auditoría en Python: 35 de 35 iguales |
+| 5 | 5 frases de más de 30 palabras en «Qué encontré» | Partidas sin cambiar cifras: 0 frases de más de 30 palabras en español y en inglés. La recomendación pasó a 3 puntos |
+| 6 | (Opcional) Se tapan las burbujas de PE, PB, AL y SE | Burbujas un poco más chicas: el noreste se separa mejor y las diferencias de tamaño se siguen viendo |
+
+También confirmé desde el PC la descarga de Kaggle, que la nube no pudo probar porque su red lo bloquea: forzada sin caché, bajó en 2,8 segundos y llegaron los 9 archivos con sus filas exactas.

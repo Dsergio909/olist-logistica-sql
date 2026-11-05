@@ -542,12 +542,12 @@ class Pagina:
             "drillFilterOtherVisuals": True}})
 
     def texto_pie(self):
-        n, pos = self._base(24, self.alto - 26, 1232, 22)
+        n, pos = self._base(24, self.alto - 34, 1232, 32)
         self.visuales.append({"name": n, "position": pos, "visual": {
             "visualType": "textbox",
             "objects": {"general": [{"properties": {"paragraphs": [{"textRuns": [{
                 "value": "Fuente: Olist, Brazilian E-Commerce Public Dataset (Kaggle), licencia CC BY-NC-SA 4.0. "
-                         "Pedidos de sep-2016 a oct-2018. Tarde = llegó después del día prometido.",
+                         "Pedidos de sep-2016 a oct-2018. Tarde = llegó después del día prometido. Mapa: Natural Earth.",
                 "textStyle": {"fontFamily": "Segoe UI", "fontSize": "8pt", "color": TEXTO_SUAVE}}]}]}}]},
             "drillFilterOtherVisuals": True}})
 
@@ -623,7 +623,7 @@ def paginas() -> list[Pagina]:
                                 "scaling": lit("Fit")}}}}],
                         "categoryLabels": [{"properties": {"show": lit(True), "color": color(TEXTO), "fontSize": lit(8)}}],
                         "dataPoint": [{"properties": {"fill": color(ACENTO)}}],
-                        "bubbles": [{"properties": {"bubbleSize": lit(-25)}}]})
+                        "bubbles": [{"properties": {"bubbleSize": lit(-28)}}]})
     p1.grafico("clusteredBarChart", 560, 192, 264, 604, "% tarde por estado del cliente",
                {"Category": [C("Estados", "codigo")], "Y": [Me("% tarde")]},
                orden=(Me("% tarde"), "Descending"),

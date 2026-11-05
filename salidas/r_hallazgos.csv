@@ -31,3 +31,6 @@ orden,clave,valor,decimales,descripcion
 30,peores10_pct_retrasos,12.7,1,% de todos los retrasos que tiene ese 10 %
 31,nota_respondio_antes_1_a_6,1.65,2,Nota con 1 a 6 días de retraso si respondió antes de recibir
 32,nota_respondio_despues_1_a_6,3.73,2,Nota con 1 a 6 días de retraso si respondió después de recibir
+33,ruta_sp_rj_pct_tarde,14.3,1,% tarde en la ruta São Paulo -> Rio de Janeiro (pedidos de un vendedor)
+34,ruta_sp_rj_pedidos,8048.0,0,"Pedidos de SP -> RJ, la segunda ruta con más pedidos"
+35,ruta_sp_sp_pct_tarde,4.7,1,"% tarde en la ruta São Paulo -> São Paulo, la de más pedidos"
